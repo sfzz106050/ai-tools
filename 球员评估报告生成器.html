@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>青少年足球球员评估报告 · ZZ出品</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Microsoft YaHei",sans-serif;background:#0d1b2a;color:#e0e0e0}
+.header{text-align:center;padding:20px;border-bottom:3px solid #2d8a4e}
+.header h1{font-size:22px}
+.header p{font-size:13px;color:#8ab4d6}
+.container{max-width:700px;margin:0 auto;padding:16px}
+.card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px;margin-bottom:14px}
+.card h2{font-size:15px;color:#8ab4d6;margin-bottom:10px}
+.row{display:flex;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.row>*{flex:1;min-width:120px}
+label{display:block;font-size:12px;color:#94a3b8;margin-bottom:2px}
+input,select,textarea{width:100%;padding:8px 10px;border:1px solid #1e3a5f;border-radius:6px;font-size:13px;font-family:inherit;background:#0f2235;color:#e0e0e0}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#2d8a4e}
+textarea{resize:vertical;min-height:50px}
+.slider-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.slider-label{width:100px;font-size:12px;color:#cbd5e1;text-align:right;flex-shrink:0}
+.slider-input{flex:1;-webkit-appearance:none;height:5px;border-radius:3px;background:linear-gradient(90deg,#ef4444,#f59e0b,#22c55e);outline:none}
+.slider-input::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid #2d8a4e;cursor:pointer}
+.slider-val{width:26px;text-align:center;font-weight:700;font-size:13px;color:#4ade80}
+.btn{width:100%;padding:12px;background:#2d8a4e;color:#fff;border:none;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer;margin-top:4px}
+.btn:hover{background:#1a6b35}
+.btn-save{width:100%;padding:10px;background:transparent;border:1px solid #60a5fa;color:#60a5fa;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:6px}
+.btn-save:hover{background:rgba(96,165,250,0.1)}
+.result-area{background:rgba(255,255,255,0.04);border:1px solid rgba(45,138,78,0.3);border-radius:12px;padding:20px;margin-top:16px;display:none}
+.result-area.show{display:block}
+.tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.tab{padding:7px 14px;border:1px solid #1e3a5f;border-radius:7px;cursor:pointer;font-size:12px;color:#94a3b8;transition:all .15s}
+.tab:hover{border-color:#2d8a4e;color:#cbd5e1}
+.tab.active{background:#0d2b1a;border-color:#2d8a4e;color:#4ade80;font-weight:600}
+.report-text{background:#0a1625;border:1px solid #1e3a5f;border-radius:8px;padding:16px;font-size:13px;line-height:2;white-space:pre-wrap;margin-bottom:10px;max-height:500px;overflow-y:auto}
+.copy-btn{padding:8px 16px;border:1px solid #4ade80;background:transparent;color:#4ade80;border-radius:6px;cursor:pointer;font-size:13px;margin-right:6px}
+.copy-btn:hover{background:rgba(74,222,128,0.1)}
+.compare-table{width:100%;border-collapse:collapse;margin:10px 0;font-size:12px}
+.compare-table th{background:#1a3a1a;color:#4ade80;padding:6px 8px;text-align:left}
+.compare-table td{border:1px solid #1e3a5f;padding:5px 8px}
+footer{text-align:center;font-size:11px;color:#374151;padding:20px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>⚽ 青少年足球球员深度评估报告</h1>
+  <p>U11-U15 · 球探综合评估 + 模板对比 + 潜力预测 · 2034杯专用</p>
+</div>
+
+<div class="container">
+
+<!-- 基本信息 -->
+<div class="card">
+  <h2>📋 基本信息</h2>
+  <div class="row">
+    <div><label>球员姓名 *</label><input type="text" id="pName" placeholder="例：张浩宇"></div>
+    <div><label>年龄组</label><select id="pAge"><option value="U11">U11 (10-11岁)</option><option value="U12">U12 (11-12岁)</option><option value="U13" selected>U13 (12-13岁)</option><option value="U14">U14 (13-14岁)</option><option value="U15">U15 (14-15岁)</option></select></div>
+    <div><label>位置</label><select id="pPos"><option value="前锋">前锋 (ST)</option><option value="边锋">边锋 (LW/RW)</option><option value="攻击型中场">攻击型中场 (CAM)</option><option value="中场" selected>中场 (CM)</option><option value="防守型中场">防守型中场 (CDM)</option><option value="边后卫">边后卫 (LB/RB)</option><option value="中后卫">中后卫 (CB)</option><option value="门将">门将 (GK)</option></select></div>
+  </div>
+  <div class="row">
+    <div><label>模板球星 *</label><select id="pStar"><option value="">请选择</option><optgroup label="中场"><option value="卢卡·莫德里奇" selected>莫德里奇 - 组织大师</option><option value="凯文·德布劳内">德布劳内 - 传球大师</option><option value="裘德·贝林厄姆">贝林厄姆 - B2B全能中场</option><option value="佩德里">佩德里 - 控制型中场</option><option value="罗德里">罗德里 - 防守型后腰</option></optgroup><optgroup label="前锋"><option value="埃尔林·哈兰德">哈兰德 - 力量型中锋</option><option value="基利安·姆巴佩">姆巴佩 - 速度型前锋</option><option value="罗伯特·莱万多夫斯基">莱万 - 全能中锋</option></optgroup><optgroup label="边锋"><option value="维尼修斯·儒尼奥尔">维尼修斯 - 突破型边锋</option><option value="穆罕默德·萨拉赫">萨拉赫 - 内切型边锋</option><option value="拉明·亚马尔">亚马尔 - 天才边锋</option></optgroup><optgroup label="后卫"><option value="维吉尔·范戴克">范戴克 - 统治型中卫</option><option value="特伦特·亚历山大-阿诺德">阿诺德 - 进攻型边卫</option></optgroup><optgroup label="门将"><option value="阿利松·贝克尔">阿利松 - 全能门将</option></optgroup></select></div>
+    <div><label>所属球队</label><input type="text" id="pTeam" placeholder="例：北京清华附中"></div>
+    <div><label>比赛日期</label><input type="date" id="pDate"></div>
+  </div>
+</div>
+
+<!-- 整体维度 -->
+<div class="card">
+  <h2>🔵 整体维度</h2>
+  <div class="slider-row"><span class="slider-label">控球能力</span><input type="range" class="slider-input" id="s_ctrl_control" value="6" oninput="this.nextElementSibling.textContent=this.value"><span class="slider-val">6</span></div>
+  <div class="slider-row"><span class="slider-label">无球跑动</span><input type="range" class="slider-input" id="s_ctrl_offball" value="6" oninput="this.nextElementSibling.textContent=this.value"><span class="slider-val">6</span></div>
+  <div class="slider-row"><span class="slider-label">逼抢意识</span><input type="range" class="slider-input" id="s_ctrl_press" value="6" oninput="this.nextElementSibling.textContent=this.value"><span class="slider-val">6</span></div>
+  <div class="slider-row"><span class="slider-label">站位选择</span><input type="range" class="slider-input" id="s_ctrl_position" value="6" oninput="this.nextElementSibling.textContent=this.value"><span class="slider-val">6</span></div>
+</div>
+
+<!-- 进攻能力 -->
+<div class="card">
+  <h2>🔴 进攻能力</h2>
+  <div class="slider-row"><span class="slider-label">拉开宽度</span><input type="range" class="slider-input" id="s_atk_width" value="6" oninput="this.nextElementSibling.textContent=this.value"><span class="slider-val">6</span></div>
+  <div class="slider-row"><span class="slider-label">跑位支援</span><input type="range" class="slider-input" id="s_atk_support" value="6" oninput="this.nextElementSibling.textContent=this.value"><span class="slider-val">6</span></div>
+  <div class="slider-row"><span class="slider-label">一对一突破</span><input type="range" class="slider-input" id="s_atk_dribble" value="6" oninput="this.nextElementSibling.textContent=this.value"><span class="slider-val">6</span></div>
+  <div class="slider-row"><span class="slider-label">传中助攻</span><input type="range" class="slider-input" id="s_atk_cross" value="6" oninput="this.nextElementSibling.textContent=this.value"><span class="slider-val">6</span></div>
+  <div class="slider-row"><span class="slider-label">对抗能力</span><input type="range" class="slider-input" id="s_atk_physical" value="6" oninput="this.nextElementSibling.textContent=this.value"><span class="slider-val">6</span></div>
+  <div class="slider-row"><span class="slider-label">速度节奏</span><input type="range" class="slider-input" id="s_atk_speed" value="6" oninput="this.nextElementSibling.textContent=this.value"><span class="slider-val">6</span></div>
+  <div class="slider-row"><span class="slider-label">传球视野</span><input type="range" class="slider-input" id="s_atk_vision" value="6" oninput="this.nextElementSibling.textContent=this.value"><span class="slider-val">6</span></div>
+  <div class="slider-row"><span class="slider-label">身体姿态</span><input type="range" class="slider-input" id="s_atk_posture" value="6" oninput="this.nextElementSibling.textContent=this.value"><span class="slider-val">6</span></div>
+</div>
+
+<!-- 防守分析 -->
+<div class="card">
+  <h2>🟢 防守分析</h2>
+  <div class="slider-row"><span class="slider-label">防守投入</span><input type="range" class="slider-input" id="s_def_commit" value="6" oninput="this.nextElementSibling.textContent=this.value"><span class="slider-val">6</span></div>
+  <div class="slider-row"><span class="slider-label">失球反应</span><input type="range" class="slider-input" id="s_def_reaction" value="6" oninput="this.nextElementSibling.textContent=this.value"><span class="slider-val">6</span></div>
+  <div class="slider-row"><span class="slider-label">队友配合</span><input type="range" class="slider-input" id="s_def_teamwork" value="6" oninput="this.nextElementSibling.textContent=this.value"><span class="slider-val">6</span></div>
+  <div class="slider-row"><span class="slider-label">二点争抢</span><input type="range" class="slider-input" id="s_def_second" value="6" oninput="this.nextElementSibling.textContent=this.value"><span class="slider-val">6</span></div>
+  <div class="slider-row"><span class="slider-label">空中对抗</span><input type="range" class="slider-input" id="s_def_aerial" value="6" oninput="this.nextElementSibling.textContent=this.value"><span class="slider-val">6</span></div>
+  <div class="slider-row"><span class="slider-label">中路收缩</span><input type="range" class="slider-input" id="s_def_compact" value="6" oninput="this.nextElementSibling.textContent=this.value"><span class="slider-val">6</span></div>
+  <div class="slider-row"><span class="slider-label">角色调整</span><input type="range" class="slider-input" id="s_def_adapt" value="6" oninput="this.nextElementSibling.textContent=this.value"><span class="slider-val">6</span></div>
+  <div class="slider-row"><span class="slider-label">抢断节奏</span><input type="range" class="slider-input" id="s_def_tackle" value="6" oninput="this.nextElementSibling.textContent=this.value"><span class="slider-val">6</span></div>
+</div>
+
+<!-- 比赛观察 -->
+<div class="card">
+  <h2>📝 比赛中观察到的具体情况</h2>
+  <textarea id="pObs" rows="3" placeholder="例：上半场有一次精彩的连过两人后分球；下半场体能下降后失误增多；定位球防守时位置感有提升空间。"></textarea>
+</div>
+
+<button class="btn-save" onclick="saveEval()">💾 保存本次评估（用于成长追踪）</button>
+<button class="btn" onclick="generate()">📝 一键生成深度评估报告</button>
+
+<!-- 结果区 -->
+<div class="result-area" id="resultArea">
+  <h2 id="resultTitle" style="color:#8ab4d6;margin-bottom:12px;"></h2>
+  <div class="tabs" id="resultTabs">
+    <span class="tab active" onclick="switchTab('scout')">📋 球探完整报告</span>
+    <span class="tab" onclick="switchTab('star')">⭐ 模板球星对比</span>
+    <span class="tab" onclick="switchTab('parent')">👨‍👩‍👧 家长友好版</span>
+    <span class="tab" onclick="switchTab('potential')">🔮 潜力预测</span>
+    <span class="tab" onclick="switchTab('growth')">📈 成长追踪</span>
+  </div>
+  <div id="tabBody"></div>
+</div>
+
+</div>
+<footer><p>⚽ 青少年足球深度评估系统 · ZZ 用 Claude Code 制作 · 2034杯专用</p></footer>
+
+<script>
+// ====== 模板球星完整数据库 ======
+var STARS = {
+'卢卡·莫德里奇':{pos:'中场',traits:'外脚背绝技、比赛节拍器、控球摆脱、大场面核心',desc:'中场艺术大师，金球奖得主。用技术和智慧重新定义了中场球员的上限。',
+  s:{ctrl_control:10,ctrl_offball:9,ctrl_press:7,ctrl_position:10,atk_width:8,atk_support:9,atk_dribble:9,atk_cross:9,atk_physical:5,atk_speed:6,atk_vision:10,atk_posture:10,def_commit:8,def_reaction:8,def_teamwork:10,def_second:7,def_aerial:4,def_compact:8,def_adapt:10,def_tackle:8}},
+'凯文·德布劳内':{pos:'攻击型中场',traits:'上帝视角、致命直塞、传中专家、进攻发动机',desc:'当今世界第一传球手，视野和传球精度达到历史级别。',
+  s:{ctrl_control:9,ctrl_offball:8,ctrl_press:6,ctrl_position:8,atk_width:9,atk_support:10,atk_dribble:7,atk_cross:10,atk_physical:7,atk_speed:7,atk_vision:10,atk_posture:8,def_commit:6,def_reaction:5,def_teamwork:9,def_second:5,def_aerial:5,def_compact:5,def_adapt:7,def_tackle:5}},
+'裘德·贝林厄姆':{pos:'攻击型中场',traits:'全能中场、后插上得分、领导气质、攻防一体',desc:'新生代B2B中场代表，攻防俱佳，技术全面，心理素质超龄。',
+  s:{ctrl_control:9,ctrl_offball:9,ctrl_press:8,ctrl_position:9,atk_width:8,atk_support:9,atk_dribble:8,atk_cross:7,atk_physical:8,atk_speed:8,atk_vision:8,atk_posture:9,def_commit:8,def_reaction:8,def_teamwork:9,def_second:8,def_aerial:7,def_compact:8,def_adapt:9,def_tackle:7}},
+'佩德里':{pos:'中场',traits:'极致控球、节奏控制、摆脱压迫、传球精准',desc:'控制型中场的未来模板，控球和摆脱能力现象级。',
+  s:{ctrl_control:10,ctrl_offball:9,ctrl_press:7,ctrl_position:9,atk_width:7,atk_support:9,atk_dribble:8,atk_cross:7,atk_physical:5,atk_speed:6,atk_vision:9,atk_posture:9,def_commit:7,def_reaction:7,def_teamwork:9,def_second:6,def_aerial:3,def_compact:7,def_adapt:9,def_tackle:6}},
+'罗德里':{pos:'防守型中场',traits:'防守屏障、出球核心、位置感顶级、战术执行力完美',desc:'当今世界第一防守型后腰，金球奖得主，防守和出球能力完美结合。',
+  s:{ctrl_control:8,ctrl_offball:8,ctrl_press:9,ctrl_position:10,atk_width:6,atk_support:8,atk_dribble:6,atk_cross:6,atk_physical:9,atk_speed:6,atk_vision:8,atk_posture:8,def_commit:10,def_reaction:9,def_teamwork:10,def_second:9,def_aerial:8,def_compact:10,def_adapt:10,def_tackle:9}},
+'埃尔林·哈兰德':{pos:'前锋',traits:'强力终结、禁区嗅觉、身体碾压、二次进攻',desc:'世界顶级力量型中锋，禁区内终结能力历史级。',
+  s:{ctrl_control:7,ctrl_offball:9,ctrl_press:7,ctrl_position:9,atk_width:6,atk_support:7,atk_dribble:7,atk_cross:5,atk_physical:10,atk_speed:9,atk_vision:6,atk_posture:8,def_commit:6,def_reaction:6,def_teamwork:6,def_second:7,def_aerial:9,def_compact:5,def_adapt:6,def_tackle:5}},
+'基利安·姆巴佩':{pos:'前锋',traits:'极致速度、一对一突破、大场面先生、反击核武器',desc:'世界顶级速度型前锋，爆发力和单兵突破能力历史级。',
+  s:{ctrl_control:8,ctrl_offball:9,ctrl_press:5,ctrl_position:8,atk_width:9,atk_support:8,atk_dribble:10,atk_cross:7,atk_physical:7,atk_speed:10,atk_vision:7,atk_posture:9,def_commit:4,def_reaction:4,def_teamwork:5,def_second:4,def_aerial:4,def_compact:3,def_adapt:5,def_tackle:3}},
+'罗伯特·莱万多夫斯基':{pos:'前锋',traits:'全能中锋、跑位大师、左右开弓、战术执行力强',desc:'现代全能中锋模板，技术、身体、意识三位一体。',
+  s:{ctrl_control:9,ctrl_offball:9,ctrl_press:7,ctrl_position:10,atk_width:6,atk_support:8,atk_dribble:7,atk_cross:5,atk_physical:9,atk_speed:7,atk_vision:7,atk_posture:9,def_commit:7,def_reaction:6,def_teamwork:7,def_second:7,def_aerial:8,def_compact:6,def_adapt:7,def_tackle:6}},
+'维尼修斯·儒尼奥尔':{pos:'边锋',traits:'极致盘带、变速突破、创造力爆棚、单点爆破',desc:'当今最具杀伤力的边路突破手，一对一能力无人能挡。',
+  s:{ctrl_control:9,ctrl_offball:8,ctrl_press:5,ctrl_position:7,atk_width:9,atk_support:7,atk_dribble:10,atk_cross:8,atk_physical:6,atk_speed:10,atk_vision:7,atk_posture:9,def_commit:5,def_reaction:4,def_teamwork:6,def_second:4,def_aerial:3,def_compact:4,def_adapt:6,def_tackle:4}},
+'穆罕默德·萨拉赫':{pos:'边锋',traits:'内切射门、跑位鬼魅、身体素质好、稳定输出',desc:'内切型边锋的标杆，得分能力堪比顶级中锋。',
+  s:{ctrl_control:9,ctrl_offball:9,ctrl_press:7,ctrl_position:8,atk_width:8,atk_support:8,atk_dribble:9,atk_cross:7,atk_physical:8,atk_speed:9,atk_vision:7,atk_posture:8,def_commit:7,def_reaction:6,def_teamwork:7,def_second:6,def_aerial:5,def_compact:6,def_adapt:7,def_tackle:6}},
+'拉明·亚马尔':{pos:'边锋',traits:'天才少年、技术早熟、突破犀利、左脚魔术师',desc:'最年轻的天才边锋，16岁已成为巴萨和西班牙国家队主力。',
+  s:{ctrl_control:9,ctrl_offball:7,ctrl_press:4,ctrl_position:7,atk_width:9,atk_support:7,atk_dribble:9,atk_cross:8,atk_physical:4,atk_speed:8,atk_vision:7,atk_posture:8,def_commit:4,def_reaction:3,def_teamwork:5,def_second:3,def_aerial:2,def_compact:3,def_adapt:6,def_tackle:3}},
+'维吉尔·范戴克':{pos:'中后卫',traits:'空中霸主、一对一防守、后防指挥官、冷静从容',desc:'现代中后卫模板，身体条件、防守意识和领导力三位一体。',
+  s:{ctrl_control:7,ctrl_offball:6,ctrl_press:6,ctrl_position:10,atk_width:5,atk_support:5,atk_dribble:5,atk_cross:5,atk_physical:10,atk_speed:7,atk_vision:7,atk_posture:9,def_commit:9,def_reaction:10,def_teamwork:10,def_second:9,def_aerial:10,def_compact:10,def_adapt:9,def_tackle:9}},
+'特伦特·亚历山大-阿诺德':{pos:'边后卫',traits:'传球大师级、定位球高手、进攻发起者、创造力',desc:'进攻型边后卫的极致代表，传球能力达到中场大师级别。',
+  s:{ctrl_control:8,ctrl_offball:8,ctrl_press:5,ctrl_position:7,atk_width:10,atk_support:9,atk_dribble:7,atk_cross:10,atk_physical:6,atk_speed:7,atk_vision:10,atk_posture:8,def_commit:6,def_reaction:5,def_teamwork:7,def_second:5,def_aerial:4,def_compact:5,def_adapt:6,def_tackle:5}},
+'阿利松·贝克尔':{pos:'门将',traits:'门线反应、一对一扑救、后场出球、大心脏',desc:'世界顶级门将，反应速度、出击判断和脚下技术完美结合。',
+  s:{ctrl_control:0,ctrl_offball:0,ctrl_press:0,ctrl_position:10,atk_width:0,atk_support:0,atk_dribble:0,atk_cross:0,atk_physical:8,atk_speed:6,atk_vision:8,atk_posture:8,def_commit:10,def_reaction:10,def_teamwork:10,def_second:8,def_aerial:8,def_compact:9,def_adapt:9,def_tackle:3}}
+};
+
+// ====== 全局变量 ======
+var ALL_KEYS=['ctrl_control','ctrl_offball','ctrl_press','ctrl_position','atk_width','atk_support','atk_dribble','atk_cross','atk_physical','atk_speed','atk_vision','atk_posture','def_commit','def_reaction','def_teamwork','def_second','def_aerial','def_compact','def_adapt','def_tackle'];
+var KEY_LABELS={ctrl_control:'控球能力',ctrl_offball:'无球跑动',ctrl_press:'逼抢意识',ctrl_position:'站位选择',atk_width:'拉开宽度',atk_support:'跑位支援',atk_dribble:'一对一突破',atk_cross:'传中助攻',atk_physical:'对抗能力',atk_speed:'速度节奏',atk_vision:'传球视野',atk_posture:'身体姿态',def_commit:'防守投入',def_reaction:'失球反应',def_teamwork:'队友配合',def_second:'二点争抢',def_aerial:'空中对抗',def_compact:'中路收缩',def_adapt:'角色调整',def_tackle:'抢断节奏'};
+var OVERALL_KEYS=['ctrl_control','ctrl_offball','ctrl_press','ctrl_position'];
+var ATTACK_KEYS=['atk_width','atk_support','atk_dribble','atk_cross','atk_physical','atk_speed','atk_vision','atk_posture'];
+var DEFENSE_KEYS=['def_commit','def_reaction','def_teamwork','def_second','def_aerial','def_compact','def_adapt','def_tackle'];
+var currentData=null;
+
+function gv(id){return parseInt(document.getElementById(id).value)}
+function avg(arr){var s=0;for(var i=0;i<arr.length;i++)s+=arr[i];return s/arr.length}
+function bar(sc){var s='';for(var i=0;i<10;i++)s+=(i<sc?'#':'-');return '['+sc+'/10] '+s}
+
+// ====== 读取所有评分 ======
+function readScores(){
+  var s={};
+  for(var i=0;i<ALL_KEYS.length;i++){var k=ALL_KEYS[i];s[k]=gv('s_'+k)}
+  return s
+}
+
+// ====== 潜力预测 ======
+function calcPotential(scores,ageGroup,totalAvg){
+  var ageMap={U11:1.25,U12:1.18,U13:1.10,U14:1.02,U15:0.95},af=ageMap[ageGroup]||1;
+  var techBase=avg([scores.ctrl_control,scores.atk_vision,scores.atk_posture]);
+  var iqBase=avg([scores.ctrl_offball,scores.ctrl_position,scores.def_adapt,scores.ctrl_press]);
+  var physRoom=(10-avg([scores.atk_physical,scores.atk_speed]))*0.5+5;
+  var attBase=avg([scores.def_commit,scores.def_teamwork]);
+  var raw=(techBase*0.3+iqBase*0.25+physRoom*0.2+attBase*0.15+totalAvg*0.1)*af;
+  var pot=Math.min(10,Math.max(1,raw));
+  var lv,fc;
+  if(pot>=8.5){lv='S级 - 职业前景广阔';fc='该球员具备冲击职业联赛的显著潜力。综合技术基础、球商和发展空间来看，如果训练方向正确且保持进取心，有望在未来3-5年内进入职业梯队甚至更高平台的视野。建议列为重点跟踪对象，进行系统性长期培养。'}
+  else if(pot>=7.5){lv='A级 - 重点培养对象';fc='该球员有较大的发展空间和较好的成长基础。在关键能力上持续投入训练，有望在2-4年内达到较高竞争水平。建议定期评估，动态调整训练计划。'}
+  else if(pot>=6.5){lv='B+级 - 值得持续关注';fc='该球员具有一定的发展潜力，但在某些核心维度上还需要显著提升。建议制定针对性的强化计划，在6-12个月后重新评估成长幅度。'}
+  else if(pot>=5.5){lv='B级 - 可塑之才';fc='该球员目前整体水平尚在成长阶段，但具备一定的上升空间。需要教练团队给予更多耐心和个性化指导，重点是建立信心和夯实基本功。'}
+  else if(pot>=4.5){lv='C级 - 需重点帮扶';fc='该球员现阶段在多个维度上与同龄球员存在差距。建议从基本功入手，降低短期竞技目标，以培养兴趣和建立正确技术动作为主。'}
+  else{lv='D级 - 建议调整方向';fc='该球员目前在高强度竞技层面面临较大困难。建议教练组与家长沟通，评估是否需要调整发展路径。'}
+  return{score:pot.toFixed(1),level:lv,forecast:fc,breakdown:{techBase:techBase.toFixed(1),iqBase:iqBase.toFixed(1),physRoom:physRoom.toFixed(1),attitudeBase:attBase.toFixed(1),ageFactor:af.toFixed(2)}}
+}
+
+// ====== 模板对比 ======
+function compareStar(scores,totalAvgs,starName){
+  var sd=STARS[starName];if(!sd)return null;
+  var gaps=[],tg=0,comp=0;
+  for(var i=0;i<ALL_KEYS.length;i++){var k=ALL_KEYS[i],sv=sd.s[k];if(sv===0)continue;var gap=sv-scores[k];gaps.push({k:k,p:scores[k],t:sv,g:gap});tg+=Math.abs(gap);comp++}
+  gaps.sort(function(a,b){return Math.abs(a.g)-Math.abs(b.g)});
+  var sim=Math.max(0,Math.min(100,Math.round(100-(tg/comp)*10)));
+  var simLv;
+  if(sim>=80)simLv='高度相似 -- 该球员的球风和能力结构与模板球星有很高的契合度';
+  else if(sim>=65)simLv='中等相似 -- 在多个维度上与模板球星有共通之处，但仍有明显差距';
+  else if(sim>=50)simLv='略有相似 -- 在某些特点上与模板球星有方向性的接近';
+  else simLv='差异较大 -- 目前与模板球星的风格和能力结构存在较大差异';
+  return{starName:starName,starPos:sd.pos,starDesc:sd.desc,starTraits:sd.traits,similarity:sim,simLevel:simLv,closest:gaps.slice(0,3),furthest:gaps.slice(-3).reverse(),playerAvg:totalAvgs,templateAvg:{overall:avg(OVERALL_KEYS.map(function(k){return sd.s[k]})).toFixed(1),attack:avg(ATTACK_KEYS.map(function(k){return sd.s[k]})).toFixed(1),defense:avg(DEFENSE_KEYS.map(function(k){return sd.s[k]})).toFixed(1)}}
+}
+
+// ====== 主生成函数 ======
+function generate(){
+  var name=document.getElementById('pName').value.trim();if(!name){alert('请填写球员姓名');return}
+  var ageGroup=document.getElementById('pAge').value,position=document.getElementById('pPos').value;
+  var starName=document.getElementById('pStar').value;if(!starName){alert('请选择模板球星');return}
+  var team=document.getElementById('pTeam').value.trim();
+  var dateStr=(document.getElementById('pDate').value||'').replace(/-/g,'.');
+  var obs=document.getElementById('pObs').value.trim();
+
+  var scores=readScores();
+  var overallAvg=avg(OVERALL_KEYS.map(function(k){return scores[k]}));
+  var attackAvg=avg(ATTACK_KEYS.map(function(k){return scores[k]}));
+  var defenseAvg=avg(DEFENSE_KEYS.map(function(k){return scores[k]}));
+  var totalAvg=overallAvg*0.35+attackAvg*0.35+defenseAvg*0.3;
+  var totalAvgs={overall:overallAvg.toFixed(1),attack:attackAvg.toFixed(1),defense:defenseAvg.toFixed(1)};
+
+  var grade;if(totalAvg>=8.5)grade='A+ / 重点培养';else if(totalAvg>=7.5)grade='A / 优秀苗子';else if(totalAvg>=6.5)grade='B+ / 可塑之才';else if(totalAvg>=5.5)grade='B / 有待打磨';else if(totalAvg>=4.5)grade='C / 需重点关注';else grade='D / 基础薄弱';
+
+  var potential=calcPotential(scores,ageGroup,totalAvg);
+  var comp=compareStar(scores,totalAvgs,starName);
+
+  // ===== 球探完整报告 =====
+  var sr='';
+  sr+='========================================\n';
+  sr+='  '+ageGroup+' 青少年足球球员深度评估报告\n';
+  sr+='  -- 2034杯专项 --\n';
+  sr+='========================================\n\n';
+  sr+='[基本信息]\n  姓名: '+name+'\n  年龄组: '+ageGroup+'\n  场上位置: '+position+'\n';
+  if(team)sr+='  所属球队: '+team+'\n';
+  sr+='  评估日期: '+(dateStr||'未填写')+'\n  模板球星: '+starName+'\n\n';
+  sr+='----------------------------------------\n\n';
+  sr+='[综合评分]\n  整体维度: '+overallAvg.toFixed(1)+'/10\n  进攻能力: '+attackAvg.toFixed(1)+'/10\n  防守分析: '+defenseAvg.toFixed(1)+'/10\n  ------------------------------\n  综合得分: '+totalAvg.toFixed(1)+'/10\n  综合评级: '+grade+'\n\n';
+
+  // 整体维度
+  sr+='----------------------------------------\n\n[维度一: 整体维度] '+overallAvg.toFixed(1)+'/10\n\n';
+  sr+='  控球能力: '+bar(scores.ctrl_control)+'\n  无球跑动: '+bar(scores.ctrl_offball)+'\n  逼抢意识: '+bar(scores.ctrl_press)+'\n  站位选择: '+bar(scores.ctrl_position)+'\n\n';
+  sr+='  小结: '+dimSummary(OVERALL_KEYS,scores,name,ageGroup,'整体')+'\n\n';
+
+  // 进攻能力
+  sr+='----------------------------------------\n\n[维度二: 进攻能力] '+attackAvg.toFixed(1)+'/10\n\n';
+  sr+='  拉开宽度: '+bar(scores.atk_width)+'\n  跑位支援: '+bar(scores.atk_support)+'\n  一对一突破: '+bar(scores.atk_dribble)+'\n  传中助攻: '+bar(scores.atk_cross)+'\n  对抗能力: '+bar(scores.atk_physical)+'\n  速度节奏: '+bar(scores.atk_speed)+'\n  传球视野: '+bar(scores.atk_vision)+'\n  身体姿态: '+bar(scores.atk_posture)+'\n\n';
+  sr+='  小结: '+dimSummary(ATTACK_KEYS,scores,name,position,'进攻')+'\n\n';
+
+  // 防守分析
+  sr+='----------------------------------------\n\n[维度三: 防守分析] '+defenseAvg.toFixed(1)+'/10\n\n';
+  sr+='  防守投入: '+bar(scores.def_commit)+'\n  失球反应: '+bar(scores.def_reaction)+'\n  队友配合: '+bar(scores.def_teamwork)+'\n  二点争抢: '+bar(scores.def_second)+'\n  空中对抗: '+bar(scores.def_aerial)+'\n  中路收缩: '+bar(scores.def_compact)+'\n  角色调整: '+bar(scores.def_adapt)+'\n  抢断节奏: '+bar(scores.def_tackle)+'\n\n';
+  sr+='  小结: '+dimSummary(DEFENSE_KEYS,scores,name,position,'防守')+'\n';
+
+  if(obs){sr+='\n----------------------------------------\n\n[比赛观察记录]\n  '+obs+'\n'}
+  sr+='\n========================================\n评估人: ZZ\n评估体系: AI辅助深度球探评估系统 v4.0\n========================================\n';
+
+  // ===== 模板对比报告 =====
+  var tr='';
+  if(comp){
+    tr+='========================================\n  * '+name+' vs '+comp.starName+'\n  模板球星对比分析\n========================================\n\n';
+    tr+='[模板球星]\n  姓名: '+comp.starName+'\n  位置: '+comp.starPos+'\n  简介: '+comp.starDesc+'\n  核心特质: '+comp.starTraits+'\n\n';
+    tr+='----------------------------------------\n\n[综合相似度] '+comp.similarity+'%\n  -> '+comp.simLevel+'\n\n';
+    tr+='[三大维度对比]\n  整体维度: '+name+' '+comp.playerAvg.overall+' vs '+comp.starName+' '+comp.templateAvg.overall+'\n  进攻能力: '+name+' '+comp.playerAvg.attack+' vs '+comp.starName+' '+comp.templateAvg.attack+'\n  防守分析: '+name+' '+comp.playerAvg.defense+' vs '+comp.starName+' '+comp.templateAvg.defense+'\n\n';
+    tr+='----------------------------------------\n\n[最接近的3项]\n';
+    for(var i=0;i<comp.closest.length;i++){var g=comp.closest[i];tr+='  '+(i+1)+'. '+KEY_LABELS[g.k]+': '+name+' '+g.p+' vs '+comp.starName+' '+g.t+' (差距'+(g.g>0?'-'+g.g:'+'+Math.abs(g.g))+')\n'}
+    tr+='\n[差距最大的3项]\n';
+    for(var i=0;i<comp.furthest.length;i++){var g=comp.furthest[i];tr+='  '+(i+1)+'. '+KEY_LABELS[g.k]+': '+name+' '+g.p+' vs '+comp.starName+' '+g.t+' (差距'+(g.g>0?'-'+g.g:'+'+Math.abs(g.g))+')\n'}
+    tr+='\n----------------------------------------\n\n[追赶建议]\n';
+    if(comp.furthest[0])tr+='  最大提升空间在"'+KEY_LABELS[comp.furthest[0].k]+'"，'+comp.starName+'在此项上'+(comp.furthest[0].t>=8?'是顶级水准':'表现突出')+'。建议将此作为近期训练的优先突破方向。\n';
+    if(comp.furthest[1])tr+='  其次是"'+KEY_LABELS[comp.furthest[1].k]+'"，建议在日常训练中有意识地增加相关场景的模拟练习。\n';
+    tr+='\n========================================\n'
+  }
+
+  // ===== 家长友好版 =====
+  var pr='';
+  pr+='========================================\n  '+name+' 球员发展报告\n  给爸爸妈妈看的版本\n========================================\n\n';
+  pr+='亲爱的家长:\n\n我们刚刚对'+name+'('+ageGroup+'组，司职'+position+')进行了一次全面的足球能力评估。以下是您需要了解的内容:\n\n';
+  pr+='----------------------------------------\n\n[整体表现] '+totalAvg.toFixed(1)+'/10 分\n'+parentOverall(totalAvg)+'\n\n';
+  pr+='----------------------------------------\n\n['+name+' 做得好的方面]\n'+parentBest(scores)+'\n\n';
+  pr+='----------------------------------------\n\n[正在成长的方面]\n'+parentGrow(scores)+'\n\n';
+  pr+='----------------------------------------\n\n[发展潜力] '+potential.score+'/10 分 ('+potential.level+')\n'+parentPot(potential.score)+'\n\n';
+  pr+='----------------------------------------\n\n[给家长的建议]\n  1. 在'+ageGroup+'这个年龄段，最重要的是保持对足球的热爱和兴趣。技术可以通过训练提高，但兴趣是最好的老师。\n  2. 鼓励多于批评。孩子在比赛中犯错是正常的，您的认可和鼓励是他继续进步的最大动力。\n  3. 注意营养和休息。这个阶段正是身体发育的关键期，充足的睡眠和均衡的营养同样重要。\n  4. 与教练保持沟通，了解孩子的训练情况和心理状态。\n  5. 不要过度比较。每个孩子的发育节奏不同，有些人早熟有些人晚成。\n\n----------------------------------------\n  评估人: ZZ\n  日期: '+(dateStr||'未填写')+'\n========================================\n';
+
+  // ===== 潜力预测 =====
+  var por='';
+  por+='========================================\n  '+name+' 发展潜力预测报告\n  '+ageGroup+' / '+position+'\n========================================\n\n';
+  por+='[潜力预测得分] '+potential.score+'/10\n[潜力评级] '+potential.level+'\n\n';
+  por+='----------------------------------------\n\n[预测分析]\n\n';
+  por+='  技术基础分: '+potential.breakdown.techBase+'/10\n    '+techBaseTxt(potential.breakdown.techBase)+'\n\n';
+  por+='  球商/意识分: '+potential.breakdown.iqBase+'/10\n    '+iqBaseTxt(potential.breakdown.iqBase)+'\n\n';
+  por+='  身体发展空间: '+potential.breakdown.physRoom+'/10\n    '+physRoomTxt(potential.breakdown.physRoom,ageGroup)+'\n\n';
+  por+='  态度/意志分: '+potential.breakdown.attitudeBase+'/10\n    '+attTxt(potential.breakdown.attitudeBase)+'\n\n';
+  por+='  年龄系数: '+potential.breakdown.ageFactor+' ('+ageGroup+'阶段修正因子)\n\n';
+  por+='----------------------------------------\n\n[前景预测]\n\n'+potential.forecast+'\n\n========================================\n';
+
+  // 存储
+  currentData={name:name,ageGroup:ageGroup,position:position,starName:starName,scores:scores,
+    overallAvg:overallAvg,attackAvg:attackAvg,defenseAvg:defenseAvg,totalAvg:totalAvg,grade:grade,
+    potential:potential,comp:comp,scoutReport:sr,starReport:tr,parentReport:pr,potentialReport:por,dateStr:dateStr};
+
+  document.getElementById('resultArea').classList.add('show');
+  document.getElementById('resultTitle').innerHTML=name+' / '+ageGroup+' / '+position+' | 综合 '+totalAvg.toFixed(1)+'/10 ('+grade+') | 潜力 '+potential.score+'/10';
+  switchTab('scout')
+}
+
+function switchTab(tab){
+  var tabs=document.querySelectorAll('.tab');
+  for(var i=0;i<tabs.length;i++){tabs[i].classList.remove('active');if(tabs[i].getAttribute('onclick').indexOf("'"+tab+"'")!==-1)tabs[i].classList.add('active')}
+  var d=currentData;if(!d)return;
+  var body=document.getElementById('tabBody'),h='';
+
+  if(tab==='scout'){
+    h+='<div class="report-text" id="txt-scout"></div>';
+    h+='<button class="copy-btn" onclick="copyTxt(\'txt-scout\')">📋 复制球探完整报告</button>';
+    setTimeout(function(){var el=document.getElementById('txt-scout');if(el)el.textContent=d.scoutReport},10)
+  }else if(tab==='star'){
+    if(!d.comp){h='<p style="color:#94a3b8;">请先生成报告</p>'}
+    else{h+='<div class="report-text" id="txt-star"></div>';h+='<button class="copy-btn" onclick="copyTxt(\'txt-star\')">📋 复制模板对比报告</button>';
+      setTimeout(function(){var el=document.getElementById('txt-star');if(el)el.textContent=d.starReport},10)}
+  }else if(tab==='parent'){
+    h+='<div class="report-text" id="txt-parent"></div>';
+    h+='<button class="copy-btn" onclick="copyTxt(\'txt-parent\')">📋 复制家长友好版报告</button>';
+    setTimeout(function(){var el=document.getElementById('txt-parent');if(el)el.textContent=d.parentReport},10)
+  }else if(tab==='potential'){
+    h+='<div style="background:#1e3a5f;border-radius:6px;height:28px;overflow:hidden;margin-bottom:12px;"><div style="height:100%;border-radius:6px;background:linear-gradient(90deg,#f59e0b,#22c55e,#60a5fa);width:'+(parseFloat(d.potential.score)*10)+'%;display:flex;align-items:center;padding-left:12px;font-weight:700;font-size:13px;color:#fff;transition:width 1.5s ease;">'+d.potential.score+'/10 / '+d.potential.level+'</div></div>';
+    h+='<div class="report-text" id="txt-potential"></div>';
+    h+='<button class="copy-btn" onclick="copyTxt(\'txt-potential\')">📋 复制潜力预测报告</button>';
+    setTimeout(function(){var el=document.getElementById('txt-potential');if(el)el.textContent=d.potentialReport},10)
+  }else if(tab==='growth'){
+    h+=buildGrowth(d.name)
+  }
+  body.innerHTML=h
+}
+
+// ====== 文字总结函数 ======
+function dimSummary(keys,scores,name,context,type){
+  var vals=[];for(var i=0;i<keys.length;i++)vals.push(scores[keys[i]]);
+  var a=avg(vals);
+  if(type==='整体'){
+    if(a>=8)return name+'在整体维度上表现优秀，四个基础维度发展均衡，基本功扎实。';
+    if(a>=6.5)return name+'整体基础良好，部分维度已有较好表现，但个别环节需要加强。';
+    if(a>=5)return name+'整体基础处于成长阶段，需要在薄弱环节上投入更多训练。';
+    return name+'的基础能力需要系统性提升，建议从最薄弱的维度入手。'
+  }else if(type==='进攻'){
+    if(a>=8)return name+'在进攻端表现亮眼，作为'+context+'的进攻能力在同龄人中属于上乘。';
+    if(a>=6.5)return name+'进攻端具备一定能力，在关键进攻指标上表现尚可，有继续提升的空间。';
+    if(a>=5)return name+'在进攻环节还需要更多打磨，尤其是在进攻选择和技术执行上。';
+    return name+'攻击端是目前需要重点突破的方向。'
+  }else{
+    if(a>=8)return name+'防守意识和执行力出色，在同龄球员中展现了较高的防守素养。';
+    if(a>=6.5)return name+'防守端表现良好，基本的防守意识和动作框架已经建立。';
+    if(a>=5)return name+'防守端有待加强，需要在防守态度和技术动作上同步提升。';
+    return name+'防守能力是当前的相对短板，建议从防守投入和基本防守动作入手。'
+  }
+}
+
+function parentOverall(sc){if(sc>=8)return '非常出色! 在同龄孩子中属于拔尖水平，各项能力均衡发展。';if(sc>=6.5)return '表现不错，已经有了很好的基础，继续努力会有更大的进步。';if(sc>=5)return '正在成长中，有些方面已经做得不错了，有些方面还需要耐心打磨。';return '目前还在打基础的阶段，每个孩子的成长节奏不同，不用着急。'}
+
+function parentBest(scores){
+  var all=[];for(var k in KEY_LABELS){if(scores[k]!==undefined)all.push({l:KEY_LABELS[k],v:scores[k]})}
+  all.sort(function(a,b){return b.v-a.v});var r='';
+  for(var i=0;i<3&&i<all.length;i++)r+='  '+(i+1)+'. '+all[i].l+' (得分:'+all[i].v+'/10, '+(all[i].v>=7?'在同龄人中表现突出':all[i].v>=5?'处于正常发展水平':'仍有提升空间')+')\n';
+  return r
+}
+function parentGrow(scores){
+  var all=[];for(var k in KEY_LABELS){if(scores[k]!==undefined)all.push({l:KEY_LABELS[k],v:scores[k]})}
+  all.sort(function(a,b){return a.v-b.v});var r='';
+  for(var i=0;i<3&&i<all.length;i++)r+='  '+(i+1)+'. '+all[i].l+' (得分:'+all[i].v+'/10, 这是接下来训练中可以多关注的方向)\n';
+  return r
+}
+function parentPot(ps){if(ps>=8)return '孩子展现出了很好的天赋和成长潜力，如果保持现在的训练热情和态度，未来可期。';if(ps>=6.5)return '孩子有不错的发展空间，关键在于持续的努力和正确的训练引导。';if(ps>=5)return '孩子还处在成长发育期，身体和技术的进步空间都很大，需要耐心和坚持。';return '孩子的成长节奏可能稍慢一些，但这并不代表将来不行。很多优秀球员都是在后期才爆发的。'}
+
+function techBaseTxt(v){var vv=parseFloat(v);if(vv>=8)return '技术基础扎实，基本功训练有素，为进一步发展提供了很好的平台。';if(vv>=6.5)return '技术基础良好，具备继续向上发展的框架，但个别技术环节仍需打磨。';if(vv>=5)return '技术基础尚在构建阶段，需要通过大量重复练习来建立正确的肌肉记忆。';return '技术基础是当前需要突破的瓶颈，建议从第一脚触球和传球精度入手。'}
+function iqBaseTxt(v){var vv=parseFloat(v);if(vv>=8)return '球商很高，对比赛的理解和阅读能力在同龄人中突出，这是最难后天培养的宝贵品质。';if(vv>=6.5)return '足球智商良好，能够理解基本战术要求，通过更多的比赛经验可以进一步提升。';if(vv>=5)return '战术理解能力正在成长中，建议多观看高水平比赛并辅以讲解，积累场景经验。';return '比赛意识和战术理解需要重点培养，可以通过视频分析和场景模拟来加速提升。'}
+function physRoomTxt(v,ag){var vv=parseFloat(v);if(vv>=8)return ag+'阶段身体发展空间很大，当前的身体素质还有很大的提升潜力。';if(vv>=6.5)return '身体条件还有较好的发展空间，青春期发育将带来自然的增长。';if(vv>=5)return '身体方面已经有一定基础，但仍有进步空间，建议科学安排体能训练。';return '身体条件目前已经发展较好，未来的提升空间相对有限，需要靠技术和意识来弥补。'}
+function attTxt(v){var vv=parseFloat(v);if(vv>=8)return '态度和意志品质非常出色，防守投入和团队配合意识强，这是长期发展的核心保障。';if(vv>=6.5)return '态度端正，在场上愿意付出努力，具备良好的团队精神。';if(vv>=5)return '态度方面还需要引导，在训练的刻苦程度和比赛的投入度上有提升空间。';return '训练态度和比赛投入需要重点关注和引导，良好的态度是进步的前提。'}
+
+function copyTxt(id){var el=document.getElementById(id);if(!el)return;navigator.clipboard.writeText(el.textContent).then(function(){alert('已复制!')}).catch(function(){alert('请手动 Ctrl+A 全选后 Ctrl+C 复制')})}
+
+// ====== 成长追踪 ======
+function saveEval(){
+  var name=document.getElementById('pName').value.trim();if(!name){alert('请先输入球员姓名');return}
+  if(!currentData){alert('请先生成评估报告');return}
+  var record={date:currentData.dateStr||new Date().toISOString().split('T')[0],ageGroup:currentData.ageGroup,position:currentData.position,dimAvgs:{overall:currentData.overallAvg.toFixed(1),attack:currentData.attackAvg.toFixed(1),defense:currentData.defenseAvg.toFixed(1),total:currentData.totalAvg.toFixed(1)},potential:currentData.potential.score,timestamp:Date.now()};
+  var all={};try{all=JSON.parse(localStorage.getItem('playerEvalHistory')||'{}')}catch(e){}
+  if(!all[name])all[name]=[];all[name].push(record);localStorage.setItem('playerEvalHistory',JSON.stringify(all));
+  alert(name+' 的评估已保存! 共 '+all[name].length+' 条记录。下次评估同一球员时可在成长追踪Tab查看趋势。')
+}
+
+function getHistory(name){try{var all=JSON.parse(localStorage.getItem('playerEvalHistory')||'{}');return all[name]||[]}catch(e){return[]}}
+
+function buildGrowth(name){
+  var hist=getHistory(name);
+  if(hist.length===0)return '<p style="color:#64748b;text-align:center;padding:30px;">暂无 '+(name||'该球员')+' 的历史评估记录<br><span style="font-size:11px;">填写评分并生成报告后，点击"保存本次评估"，下次就能看到成长曲线</span></p>';
+  var rows='';for(var i=0;i<hist.length;i++){var h=hist[i];rows+='<tr><td>'+h.date+'</td><td>'+h.ageGroup+'</td><td>'+h.position+'</td><td>'+h.dimAvgs.overall+'</td><td>'+h.dimAvgs.attack+'</td><td>'+h.dimAvgs.defense+'</td><td><strong style="color:#4ade80;">'+h.dimAvgs.total+'</strong></td><td><strong style="color:#60a5fa;">'+h.potential+'</strong></td></tr>'}
+  var first=hist[0],last=hist[hist.length-1],trendTxt='';
+  if(hist.length>=2){var trend=(parseFloat(last.dimAvgs.total)-parseFloat(first.dimAvgs.total)).toFixed(1);
+    if(trend>0)trendTxt='综合得分上升 +'+trend+' ('+first.date+' => '+last.date+'), 势头良好!';
+    else if(trend<0)trendTxt='综合得分下降 '+trend+', 需要关注是否存在状态或训练问题。';
+    else trendTxt='综合得分持平，保持稳定。'}
+  var h='<div style="margin-bottom:12px;"><strong style="color:#8ab4d6;">'+name+' 成长追踪 ('+hist.length+'次评估)</strong>';
+  if(trendTxt)h+='<p style="color:#94a3b8;font-size:12px;margin-top:4px;">'+trendTxt+'</p></div>';
+  h+='<div style="overflow-x:auto;"><table class="compare-table"><thead><tr><th>日期</th><th>年龄组</th><th>位置</th><th>整体</th><th>进攻</th><th>防守</th><th>综合</th><th>潜力</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+  h+='<p style="margin-top:10px;font-size:11px;color:#64748b;">数据保存在当前浏览器中。换电脑后需要重新保存。</p>';
+  h+='<button class="copy-btn" onclick="exportHist(\''+name+'\')">📥 导出历史数据</button><button class="copy-btn" onclick="clearHist(\''+name+'\')" style="color:#f87171;border-color:#f87171;">🗑 清除此球员记录</button>';
+  return h
+}
+function exportHist(name){var hist=getHistory(name);var blob=new Blob([JSON.stringify({name:name,history:hist},null,2)],{type:'application/json'});var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download=name+'_成长追踪.json';a.click();URL.revokeObjectURL(url)}
+function clearHist(name){if(!confirm('确定删除 '+name+' 的所有历史记录? 不可撤销。'))return;try{var all=JSON.parse(localStorage.getItem('playerEvalHistory')||'{}');delete all[name];localStorage.setItem('playerEvalHistory',JSON.stringify(all));alert(name+' 的记录已清除');switchTab('growth')}catch(e){}}
+
+document.getElementById('pDate').value=new Date().toISOString().split('T')[0];
+</script>
+</body>
+</html>

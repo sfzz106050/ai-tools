@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZZ · AI 学习之路</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a3e 40%, #0d1b2a 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            line-height: 1.8;
+        }
+
+        /* 顶部星空粒子效果 */
+        .stars {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 0;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 60px 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 头像区 */
+        .hero {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6, #a855f7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            font-weight: bold;
+            color: white;
+            margin: 0 auto 20px;
+            box-shadow: 0 0 40px rgba(99, 102, 241, 0.4);
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 40px rgba(99, 102, 241, 0.4); }
+            50% { box-shadow: 0 0 60px rgba(139, 92, 246, 0.6); }
+        }
+
+        .hero h1 {
+            font-size: 36px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .hero .tagline {
+            font-size: 16px;
+            color: #9ca3af;
+        }
+
+        /* 状态卡片 */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(99, 102, 241, 0.15);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 20px;
+            padding: 8px 20px;
+            font-size: 14px;
+            color: #a5b4fc;
+            margin-top: 16px;
+        }
+
+        .status-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+            animation: blink 1.5s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* 内容卡片 */
+        .card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 28px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        .card h2 {
+            font-size: 20px;
+            margin-bottom: 16px;
+            color: #c7d2fe;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card h2 .icon { font-size: 24px; }
+
+        /* 进度条 */
+        .skill-item {
+            margin-bottom: 14px;
+        }
+
+        .skill-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+
+        .skill-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .skill-fill {
+            height: 100%;
+            border-radius: 3px;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+            transition: width 1s ease;
+        }
+
+        /* 时间线 */
+        .timeline { position: relative; padding-left: 24px; }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 4px;
+            bottom: 4px;
+            width: 2px;
+            background: rgba(99, 102, 241, 0.3);
+        }
+        .timeline-item {
+            position: relative;
+            margin-bottom: 18px;
+            font-size: 14px;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -20px;
+            top: 7px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #6366f1;
+            border: 2px solid #1a1a3e;
+        }
+        .timeline-item.done::before { background: #22c55e; }
+
+        .timeline-date {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        /* 链接按钮 */
+        .links {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(99, 102, 241, 0.4);
+            background: rgba(99, 102, 241, 0.1);
+            color: #a5b4fc;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: rgba(99, 102, 241, 0.25);
+            border-color: #818cf8;
+            color: #c7d2fe;
+        }
+
+        .btn.primary {
+            background: #6366f1;
+            color: white;
+            border: none;
+        }
+
+        .btn.primary:hover {
+            background: #4f46e5;
+        }
+
+        /* 页脚 */
+        footer {
+            text-align: center;
+            font-size: 13px;
+            color: #4b5563;
+            margin-top: 40px;
+        }
+
+        footer span { color: #6366f1; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- 头部 -->
+        <section class="hero">
+            <div class="avatar">ZZ</div>
+            <h1>ZZ</h1>
+            <p class="tagline">AI 学习者 · 未来 AI Agent 实践者</p>
+            <div class="status-badge">
+                <span class="status-dot"></span>
+                正在学习：AI 变现 · 第 1 天
+            </div>
+        </section>
+
+        <!-- 关于我 -->
+        <section class="card">
+            <h2><span class="icon">👋</span>关于我</h2>
+            <p>你好！我是 ZZ，一个刚刚踏上 AI 学习之路的新手。</p>
+            <p style="margin-top:8px;">我相信 <strong style="color:#a5b4fc;">AI Agent 是未来</strong>，我决定从零开始，用 60 天系统学习 AI，掌握用 AI 创造价值的能力。</p>
+        </section>
+
+        <!-- 正在学习的技能 -->
+        <section class="card">
+            <h2><span class="icon">📚</span>技能成长中</h2>
+            <div class="skill-item">
+                <div class="skill-label"><span>AI 对话协作（Prompt）</span><span>刚刚开始</span></div>
+                <div class="skill-bar"><div class="skill-fill" style="width:10%"></div></div>
+            </div>
+            <div class="skill-item">
+                <div class="skill-label"><span>网页制作（HTML/CSS）</span><span>第 1 天</span></div>
+                <div class="skill-bar"><div class="skill-fill" style="width:5%"></div></div>
+            </div>
+            <div class="skill-item">
+                <div class="skill-label"><span>AI 工具应用</span><span>探索中</span></div>
+                <div class="skill-bar"><div class="skill-fill" style="width:15%"></div></div>
+            </div>
+            <div class="skill-item">
+                <div class="skill-label"><span>变现思维</span><span>规划中</span></div>
+                <div class="skill-bar"><div class="skill-fill" style="width:20%"></div></div>
+            </div>
+        </section>
+
+        <!-- 学习里程碑 -->
+        <section class="card">
+            <h2><span class="icon">🗺️</span>学习旅程</h2>
+            <div class="timeline">
+                <div class="timeline-item done">
+                    <strong>第 0 天</strong> — 制定 60 天学习变现计划
+                    <div class="timeline-date">2026.07.13</div>
+                </div>
+                <div class="timeline-item done">
+                    <strong>第 1 天</strong> — 认识 Claude Code，做出第一个个人主页 🎉
+                    <div class="timeline-date">今天</div>
+                </div>
+                <div class="timeline-item">
+                    <strong>第 7 天</strong> — 完成第一阶段启蒙，拥有 5+ 小作品
+                    <div class="timeline-date">目标</div>
+                </div>
+                <div class="timeline-item">
+                    <strong>第 35 天</strong> — 具备接单能力，完成第一个付费项目
+                    <div class="timeline-date">目标</div>
+                </div>
+                <div class="timeline-item">
+                    <strong>第 60 天</strong> — 拥有稳定变现能力 💰
+                    <div class="timeline-date">目标</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 我的项目 -->
+        <section class="card">
+            <h2><span class="icon">🛠️</span>我的作品</h2>
+            <p style="color:#9ca3af; margin-bottom:16px;">这里会逐渐填满我用 AI 做的项目 👇</p>
+            <div class="links">
+                <a href="#" class="btn">📄 个人主页（当前）</a>
+                <span class="btn" style="opacity:0.4;">📋 待办清单（即将）</span>
+                <span class="btn" style="opacity:0.4;">⏰ 番茄钟（即将）</span>
+            </div>
+        </section>
+
+        <!-- 联系 -->
+        <section class="card">
+            <h2><span class="icon">📬</span>找到我</h2>
+            <p style="color:#9ca3af;">更多作品和联系方式即将上线...</p>
+        </section>
+
+        <footer>
+            <p>由 <span>ZZ</span> 用 <span>Claude Code</span> 在 <span>第 1 天</span> 制作 · 一个 AI 新手的起点</p>
+        </footer>
+    </div>
+
+    <!-- 星空粒子 -->
+    <canvas class="stars" id="stars"></canvas>
+
+    <script>
+        // 生成星空背景
+        const canvas = document.getElementById('stars');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const stars = [];
+        for (let i = 0; i < 80; i++) {
+            stars.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                r: Math.random() * 1.5,
+                twinkle: Math.random() * Math.PI * 2,
+                speed: 0.01 + Math.random() * 0.02
+            });
+        }
+
+        function drawStars() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            stars.forEach(s => {
+                s.twinkle += s.speed;
+                const alpha = 0.3 + Math.sin(s.twinkle) * 0.3;
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+                ctx.fill();
+            });
+            requestAnimationFrame(drawStars);
+        }
+        drawStars();
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>

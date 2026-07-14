@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>房源文案生成器 · ZZ出品</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #f97316, #ef4444);
+            color: white;
+            text-align: center;
+            padding: 24px 16px;
+        }
+        .header h1 { font-size: 22px; margin-bottom: 4px; }
+        .header p { font-size: 13px; opacity: 0.85; }
+
+        .container {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        /* 表单区 */
+        .form-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        .form-card h2 {
+            font-size: 17px;
+            margin-bottom: 16px;
+            color: #1a1a1a;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .form-row > * { flex: 1; }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 4px;
+        }
+        label .required { color: #ef4444; }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+            background: #fafafa;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #f97316;
+            background: white;
+        }
+        textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .tag-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 4px;
+        }
+        .tag {
+            padding: 6px 14px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.15s;
+            background: #fafafa;
+        }
+        .tag:hover { border-color: #f97316; }
+        .tag.active {
+            background: #fff7ed;
+            border-color: #f97316;
+            color: #ea580c;
+            font-weight: 600;
+        }
+
+        .btn-generate {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #f97316, #ef4444);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: transform 0.1s, box-shadow 0.2s;
+        }
+        .btn-generate:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(249, 115, 22, 0.35);
+        }
+        .btn-generate:active { transform: scale(0.98); }
+
+        /* 结果区 */
+        .result-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            display: none;
+        }
+        .result-card.show { display: block; }
+
+        .result-card h3 {
+            font-size: 15px;
+            margin-bottom: 12px;
+            color: #555;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .result-card h3 .badge {
+            font-size: 11px;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        .badge.standard { background: #dbeafe; color: #2563eb; }
+        .badge.social { background: #fce7f3; color: #db2777; }
+        .badge.short { background: #d1fae5; color: #059669; }
+
+        .result-text {
+            background: #f9fafb;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 14px;
+            font-size: 14px;
+            line-height: 1.9;
+            white-space: pre-wrap;
+            margin-bottom: 12px;
+            min-height: 60px;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 8px;
+        }
+        .btn-copy {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #f97316;
+            background: white;
+            color: #ea580c;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.15s;
+        }
+        .btn-copy:hover { background: #fff7ed; }
+        .btn-copy.copied {
+            background: #22c55e;
+            color: white;
+            border-color: #22c55e;
+        }
+
+        .empty-tip {
+            text-align: center;
+            padding: 40px;
+            color: #aaa;
+        }
+        .empty-tip .icon { font-size: 48px; margin-bottom: 12px; }
+
+        footer {
+            text-align: center;
+            font-size: 12px;
+            color: #bbb;
+            padding: 24px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>🏠 房源文案生成器</h1>
+        <p>填信息 → 一键生成 → 直接复制用</p>
+    </div>
+
+    <div class="container">
+
+        <!-- 表单 -->
+        <div class="form-card">
+            <h2>📝 房源信息</h2>
+
+            <div class="form-row">
+                <div>
+                    <label><span class="required">*</span> 小区/位置</label>
+                    <input type="text" id="location" placeholder="例：朝阳区万科城市花园">
+                </div>
+                <div>
+                    <label><span class="required">*</span> 户型</label>
+                    <select id="layout">
+                        <option value="">请选择</option>
+                        <option value="1室0厅">1室0厅（单间）</option>
+                        <option value="1室1厅" selected>1室1厅</option>
+                        <option value="2室1厅">2室1厅</option>
+                        <option value="2室2厅">2室2厅</option>
+                        <option value="3室1厅">3室1厅</option>
+                        <option value="3室2厅">3室2厅</option>
+                        <option value="4室2厅">4室2厅</option>
+                    </select>
+                </div>
+                <div>
+                    <label><span class="required">*</span> 面积</label>
+                    <input type="text" id="area" placeholder="例：65㎡">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div>
+                    <label><span class="required">*</span> 月租金</label>
+                    <input type="text" id="price" placeholder="例：3500元/月">
+                </div>
+                <div>
+                    <label>付款方式</label>
+                    <select id="payment">
+                        <option value="押一付一">押一付一</option>
+                        <option value="押一付三" selected>押一付三</option>
+                        <option value="半年付">半年付</option>
+                        <option value="年付">年付</option>
+                    </select>
+                </div>
+                <div>
+                    <label>楼层</label>
+                    <input type="text" id="floor" placeholder="例：12层/共18层">
+                </div>
+            </div>
+
+            <div style="margin-bottom:12px;">
+                <label>朝向</label>
+                <select id="direction">
+                    <option value="朝南" selected>朝南</option>
+                    <option value="南北通透">南北通透</option>
+                    <option value="朝东">朝东</option>
+                    <option value="朝西">朝西</option>
+                    <option value="朝北">朝北</option>
+                    <option value="东南">东南</option>
+                    <option value="西南">西南</option>
+                </select>
+            </div>
+
+            <div style="margin-bottom:12px;">
+                <label>房源亮点（可多选）</label>
+                <div class="tag-group" id="highlightTags">
+                    <span class="tag" data-val="精装修">精装修</span>
+                    <span class="tag" data-val="首次出租">首次出租</span>
+                    <span class="tag" data-val="家电齐全">家电齐全</span>
+                    <span class="tag" data-val="拎包入住">拎包入住</span>
+                    <span class="tag" data-val="近地铁">近地铁</span>
+                    <span class="tag" data-val="民水民电">民水民电</span>
+                    <span class="tag" data-val="采光好">采光好</span>
+                    <span class="tag" data-val="有阳台">有阳台</span>
+                    <span class="tag" data-val="独立卫生间">独立卫生间</span>
+                    <span class="tag" data-val="有厨房">有厨房</span>
+                    <span class="tag" data-val="电梯房">电梯房</span>
+                    <span class="tag" data-val="小区环境好">小区环境好</span>
+                    <span class="tag" data-val="安静">安静</span>
+                    <span class="tag" data-val="随时看房">随时看房</span>
+                    <span class="tag" data-val="停车方便">停车方便</span>
+                </div>
+            </div>
+
+            <div style="margin-bottom:12px;">
+                <label>周边配套（可多选）</label>
+                <div class="tag-group" id="nearbyTags">
+                    <span class="tag" data-val="大型超市">大型超市</span>
+                    <span class="tag" data-val="商场">商场</span>
+                    <span class="tag" data-val="菜市场">菜市场</span>
+                    <span class="tag" data-val="地铁站">地铁站</span>
+                    <span class="tag" data-val="公交站">公交站</span>
+                    <span class="tag" data-val="公园">公园</span>
+                    <span class="tag" data-val="医院">医院</span>
+                    <span class="tag" data-val="学校">学校</span>
+                    <span class="tag" data-val="餐饮街">餐饮街</span>
+                    <span class="tag" data-val="健身房">健身房</span>
+                </div>
+            </div>
+
+            <div>
+                <label>补充说明</label>
+                <textarea id="extra" placeholder="其他想强调的：比如"房东直租无中介费"、"可养宠物"、"刚翻新过"……"></textarea>
+            </div>
+
+            <button class="btn-generate" onclick="generate()">✨ 一键生成文案</button>
+        </div>
+
+        <!-- 结果区 -->
+        <div class="result-card" id="results">
+            <h3 id="resultTitle"></h3>
+            <div id="resultContent"></div>
+        </div>
+
+        <!-- 空状态 -->
+        <div class="result-card" id="emptyState" style="display:block;">
+            <div class="empty-tip">
+                <div class="icon">📋</div>
+                <p>填好房源信息，点"生成文案"</p>
+                <p style="font-size:12px;margin-top:4px;">会同时生成 3 种风格，一键复制</p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>🏠 房源文案生成器 · ZZ 用 Claude Code 制作 · 第 1 天作品</p>
+    </footer>
+
+    <script>
+        // 标签点击切换
+        document.querySelectorAll('.tag-group').forEach(group => {
+            group.addEventListener('click', (e) => {
+                if (e.target.classList.contains('tag')) {
+                    e.target.classList.toggle('active');
+                }
+            });
+        });
+
+        function getActiveTags(groupId) {
+            const tags = document.querySelectorAll(`#${groupId} .tag.active`);
+            return Array.from(tags).map(t => t.dataset.val);
+        }
+
+        function generate() {
+            // 读取表单
+            const location = document.getElementById('location').value.trim();
+            const layout = document.getElementById('layout').value;
+            const area = document.getElementById('area').value.trim();
+            const price = document.getElementById('price').value.trim();
+            const payment = document.getElementById('payment').value;
+            const floor = document.getElementById('floor').value.trim();
+            const direction = document.getElementById('direction').value;
+            const highlights = getActiveTags('highlightTags');
+            const nearbys = getActiveTags('nearbyTags');
+            const extra = document.getElementById('extra').value.trim();
+
+            // 验证必填
+            if (!location || !layout || !area || !price) {
+                alert('请至少填写：小区/位置、户型、面积、月租金');
+                return;
+            }
+
+            // 组合基础信息
+            const floorStr = floor ? `${floor}，` : '';
+            const highlightsStr = highlights.length > 0 ? highlights.join('、') : '配套齐全';
+            const nearbysStr = nearbys.length > 0 ? nearbys.join('、') : '生活便利';
+            const extraStr = extra ? `。${extra}` : '';
+
+            const base = {
+                location, layout, area, price, payment,
+                floorStr, direction,
+                highlightsStr, nearbysStr, extraStr
+            };
+
+            // ====== 风格1：标准58同城/贝壳风格 ======
+            const standard = `【${base.location}】${base.layout}${base.direction} · ${base.price}/月
+
+🏠 房屋概况
+• 户型：${base.layout} | ${base.area} | ${base.direction}
+• 楼层：${base.floorStr}采光极佳
+• 装修：${base.highlightsStr}
+• 付款：${base.payment}
+
+📍 交通出行
+小区位于${base.location}核心位置，紧邻${base.nearbysStr}，出行购物一站式解决。
+
+✨ 房屋亮点
+本房源${base.highlightsStr}。房间干净整洁，${base.direction}通风好，居住舒适度高。适合白领、情侣或小家庭长期居住。${base.extraStr ? '特别说明：' + base.extra : ''}
+
+📞 看房联系
+房东直租，无中介费！看房请提前预约，随时可看。
+
+——房源真实有效，非诚勿扰——`;
+
+            // ====== 风格2：小红书/朋友圈风格 ======
+            const social = `🏠 姐妹们！${base.location}这套房子也太香了！！
+
+📍位置：${base.location}
+🏠 户型：${base.layout} | ${base.area} | ${base.direction}
+💰 租金：只要 ${base.price}/月！！
+
+来看看这房子有多绝 👇
+
+✨ ${base.highlightsStr}
+🛒 周边：${base.nearbysStr}
+🌞 ${base.direction}，阳光洒进来整个人都好了
+🧹 ${base.floorStr}干净整洁，拎包就能住
+
+重点是！！房东直租，没有任何中介费！！${base.extraStr || ''}
+
+📸 看房随时约～私信我发更多实拍图
+📍${base.location}
+💰${base.price}/月 | ${base.payment}
+
+#${base.location.replace(/[区路街巷号]/g,'')}租房 #房东直租 #${base.layout.replace(/[室厅]/g,'')} #好房推荐`;
+
+            // ====== 风格3：极简微信群风格 ======
+            const short = `🏠【房东直租】${base.location} ${base.layout} ${base.area}
+💰 ${base.price}/月 | ${base.payment}
+📍 ${base.nearbysStr}
+✨ ${base.highlightsStr}
+📞 看房私聊，无中介费${base.extraStr ? ' | ' + base.extra : ''}`;
+
+            // 显示结果
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('results').classList.add('show');
+            document.getElementById('resultTitle').innerHTML = '✅ 3 种风格已生成，选择你需要的复制';
+
+            document.getElementById('resultContent').innerHTML = `
+                <div style="margin-bottom:20px;">
+                    <h3 style="margin-bottom:8px;"><span class="badge standard">标准版</span> 适合58同城、贝壳、安居客</h3>
+                    <div class="result-text" id="text-standard">${escapeHtml(standard)}</div>
+                    <button class="btn-copy" onclick="copyText('text-standard', this)">📋 复制这段文案</button>
+                </div>
+
+                <div style="margin-bottom:20px;">
+                    <h3 style="margin-bottom:8px;"><span class="badge social">小红书版</span> 适合小红书、朋友圈、微信群</h3>
+                    <div class="result-text" id="text-social">${escapeHtml(social)}</div>
+                    <button class="btn-copy" onclick="copyText('text-social', this)">📋 复制这段文案</button>
+                </div>
+
+                <div style="margin-bottom:4px;">
+                    <h3 style="margin-bottom:8px;"><span class="badge short">极简版</span> 适合微信群快速转发</h3>
+                    <div class="result-text" id="text-short">${escapeHtml(short)}</div>
+                    <button class="btn-copy" onclick="copyText('text-short', this)">📋 复制这段文案</button>
+                </div>
+            `;
+
+            // 滚动到结果
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function escapeHtml(text) {
+            return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        function copyText(elementId, btn) {
+            const el = document.getElementById(elementId);
+            const text = el.innerText;
+
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = btn.textContent;
+                btn.textContent = '✅ 已复制！去粘贴吧';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.classList.remove('copied');
+                }, 2000);
+            }).catch(() => {
+                // 降级方案
+                const range = document.createRange();
+                range.selectNode(el);
+                window.getSelection().removeAllRanges();
+                window.getSelection().addRange(range);
+                alert('已选中文案，请手动 Ctrl+C 复制');
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>球星卡价格预测工具 v2 · ZZ出品</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Microsoft YaHei","PingFang SC",sans-serif;background:#1a1a2e;color:#e0e0e0;line-height:1.6}
+.header{background:linear-gradient(135deg,#1a1a2e,#16213e,#1a1a2e);text-align:center;padding:28px 16px;border-bottom:3px solid #e2b04a}
+.header h1{font-size:24px;margin-bottom:4px;color:#e2b04a}
+.header .sub{font-size:13px;color:#8a8a9a}
+.container{max-width:800px;margin:0 auto;padding:16px}
+
+.section{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:20px;margin-bottom:14px}
+.section h2{font-size:16px;margin-bottom:6px;color:#e2b04a;display:flex;align-items:center;gap:8px}
+.section .hint{font-size:11px;color:#6a6a80;margin-bottom:12px}
+.section h3{font-size:13px;color:#c0c0d0;margin:14px 0 8px;padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,0.06)}
+
+.row{display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.row>*{flex:1;min-width:140px}
+.half{flex:1;min-width:180px}
+.third{flex:1;min-width:120px}
+.full{flex:1;min-width:100%}
+
+label{display:block;font-size:12px;font-weight:600;color:#9090a0;margin-bottom:3px}
+label .tag{font-size:10px;padding:1px 6px;border-radius:3px;margin-left:4px}
+.tag.auto{background:#1a3a2a;color:#4ade80}
+.tag.manual{background:#3a2a1a;color:#f59e0b}
+
+input,select,textarea{width:100%;padding:9px 10px;border:1px solid #2a2a40;border-radius:6px;font-size:13px;font-family:inherit;background:#12122a;color:#e0e0e0;transition:border-color .2s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#e2b04a;background:#0e0e24}
+textarea{resize:vertical;min-height:50px}
+
+/* 滑块修复 - 明确1-10 */
+.score-wrap{margin-bottom:8px}
+.score-label-row{display:flex;justify-content:space-between;margin-bottom:2px;font-size:11px;color:#6a6a80}
+.score-group{display:flex;gap:10px;align-items:center;margin-bottom:6px}
+.score-name{width:110px;font-size:12px;color:#b0b0c0;text-align:right;flex-shrink:0}
+.score-slider{flex:1;-webkit-appearance:none;height:6px;border-radius:3px;background:#2a2a40;outline:none}
+.score-slider::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:#e2b04a;cursor:pointer;border:2px solid #1a1a2e}
+.score-num{width:36px;text-align:center;font-weight:700;font-size:15px;color:#e2b04a;flex-shrink:0}
+.score-range{display:flex;justify-content:space-between;font-size:10px;color:#4a4a60;padding:0 120px 0 120px;margin-top:-2px;margin-bottom:4px}
+
+/* 表现子表 */
+.perf-table{width:100%;border-collapse:collapse;margin:8px 0;font-size:12px}
+.perf-table th{background:#1a1a30;color:#9090a0;padding:6px 8px;text-align:left;font-weight:600;font-size:11px}
+.perf-table td{padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.04)}
+.perf-table input{font-size:12px;padding:6px 8px}
+
+.btn-row{display:flex;gap:10px;margin-top:16px}
+.btn{flex:1;padding:13px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;border:none;transition:all .15s;letter-spacing:1px}
+.btn-predict{background:linear-gradient(135deg,#e2b04a,#c8963e);color:#1a1a2e}
+.btn-predict:hover{box-shadow:0 4px 20px rgba(226,176,74,.4);transform:translateY(-1px)}
+.btn-reset{background:transparent;border:1px solid #555;color:#999}
+.btn-reset:hover{border-color:#999;color:#ccc}
+
+.result-card{background:rgba(255,255,255,0.03);border:1px solid rgba(226,176,74,.3);border-radius:12px;padding:24px;margin-bottom:16px;display:none}
+.result-card.show{display:block}
+.result-text{background:#0e0e1a;border:1px solid #2a2a40;border-radius:8px;padding:20px;font-size:13px;line-height:2;white-space:pre-wrap;margin:12px 0}
+
+.prediction-table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+.prediction-table th{background:#2a2a10;color:#e2b04a;padding:10px 12px;text-align:left}
+.prediction-table td{border:1px solid #2a2a40;padding:8px 12px}
+.prediction-table tr:nth-child(even){background:rgba(255,255,255,.02)}
+
+.bullish{color:#4ade80;font-weight:700}
+.bearish{color:#f87171;font-weight:700}
+.neutral{color:#facc15;font-weight:700}
+
+.risk-badge{display:inline-block;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:700;margin:2px 4px}
+.risk-high{background:#3b1f1f;color:#f87171}
+.risk-mid{background:#3b2e1f;color:#facc15}
+.risk-low{background:#1f3b1f;color:#4ade80}
+
+footer{text-align:center;font-size:11px;color:#3a3a50;padding:24px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Card Price Predictor v2</h1>
+  <p class="sub">球星卡价格预测系统 - 8大模块综合评估</p>
+</div>
+
+<div class="container">
+
+<!-- ====== 模块1: 球员基本面 ====== -->
+<div class="section">
+  <h2>1. 球员基本面 <span style="font-size:11px;color:#4ade80;">[Claude可搜]</span></h2>
+  <p class="hint">填写你能找到的所有信息，不确定的留空，我会在对话里帮你补</p>
+  <div class="row">
+    <div class="third"><label>球员姓名 *</label><input type="text" id="p1_name" placeholder="例: Jude Bellingham"></div>
+    <div class="third"><label>年龄（直接填数字）*</label><input type="text" id="p1_age" placeholder="例: 16 / 21 / 28"></div>
+    <div class="third"><label>国籍</label><input type="text" id="p1_nation" placeholder="例: Spain / 双重国籍请注明"></div>
+  </div>
+  <div class="row">
+    <div class="third"><label>位置</label><select id="p1_position">
+      <option value="">请选择</option>
+      <option value="前锋">前锋 (ST/CF)</option>
+      <option value="边锋">边锋 (LW/RW)</option>
+      <option value="攻击型中场">攻击型中场 (CAM)</option>
+      <option value="中场">中场 (CM)</option>
+      <option value="防守型中场">防守型中场 (CDM)</option>
+      <option value="边后卫">边后卫 (LB/RB/LWB/RWB)</option>
+      <option value="中后卫">中后卫 (CB)</option>
+      <option value="门将">门将 (GK)</option>
+    </select></div>
+    <div class="third"><label>惯用脚</label><select id="p1_foot">
+      <option value="">请选择</option><option value="右脚">右脚</option><option value="左脚">左脚</option><option value="双脚">双脚均衡</option>
+    </select></div>
+    <div class="third"><label>身高/体型</label><input type="text" id="p1_physique" placeholder="例: 178cm / 精瘦型"></div>
+  </div>
+  <div class="row">
+    <div class="half"><label>踢球风格</label><input type="text" id="p1_style" placeholder="例: B2B全能中场, 观赏型 / 禁区杀手"></div>
+    <div class="half"><label>场外形象 / 星味 / 争议</label><input type="text" id="p1_image" placeholder="例: 正面阳光, 商业价值高 / 暂无"></div>
+  </div>
+</div>
+
+<!-- ====== 模块2: 球员表现（拆分为三级） ====== -->
+<div class="section">
+  <h2>2. 球员表现 <span style="font-size:11px;color:#4ade80;">[Claude可搜]</span></h2>
+  <p class="hint">按实际效力的层级分别填写——如果没有该层级比赛，留空即可</p>
+
+  <h3>A. 一线队 / 成年队</h3>
+  <div class="row">
+    <div class="third"><label>联赛出场</label><input type="text" id="p2a_apps" placeholder="例: 5场(0首发) / 未首秀"></div>
+    <div class="third"><label>进球</label><input type="text" id="p2a_goals" placeholder="例: 0"></div>
+    <div class="third"><label>助攻</label><input type="text" id="p2a_assists" placeholder="例: 0"></div>
+  </div>
+  <div class="row">
+    <div class="half"><label>场均评分 / 数据源</label><input type="text" id="p2a_rating" placeholder="例: 6.52 (FotMob) / 暂无评分"></div>
+    <div class="half"><label>俱乐部地位</label><select id="p2a_status">
+      <option value="">请选择</option><option value="绝对核心">绝对核心</option><option value="主力">主力</option>
+      <option value="轮换">轮换</option><option value="替补">替补</option><option value="边缘">边缘</option>
+      <option value="青年队/未出道">青年队/未出道</option>
+    </select></div>
+  </div>
+
+  <h3>B. 梯队 / 青年队（B队、U19、U17等）</h3>
+  <div class="row">
+    <div class="third"><label>梯队级别</label><input type="text" id="p2b_level" placeholder="例: Barca Atletic / 巴萨U19"></div>
+    <div class="third"><label>出场</label><input type="text" id="p2b_apps" placeholder="例: 4场"></div>
+    <div class="third"><label>进球 / 助攻</label><input type="text" id="p2b_ga" placeholder="例: 0球 0助"></div>
+  </div>
+  <div><label>梯队表现亮点</label><textarea id="p2b_highlight" rows="1" placeholder="例: 青年欧冠4场轮换, 评分6.2-6.6 / 巴萨U19主力中场"></textarea></div>
+
+  <h3>C. 国家队梯队（U15/U16/U17/U20/U21）</h3>
+  <div class="row">
+    <div class="third"><label>国家队梯队级别</label><input type="text" id="p2c_level" placeholder="例: Spain U17"></div>
+    <div class="third"><label>出场 / 进球 / 助攻</label><input type="text" id="p2c_stats" placeholder="例: 5场 3球 2助"></div>
+    <div class="third"><label>是否主力 / 队长</label><input type="text" id="p2c_role" placeholder="例: 绝对主力, 进攻核心"></div>
+  </div>
+  <div class="row">
+    <div class="half"><label>国家队梯队大赛表现</label><input type="text" id="p2c_tournament" placeholder="例: 2026 U17欧青赛MVP, 4场1球4助, 23次机会(赛事最高)"></div>
+    <div class="half"><label>国家队成年队</label><input type="text" id="p2c_senior" placeholder="例: 尚未入选 / 2场0球"></div>
+  </div>
+  <div class="row">
+    <div class="half"><label>近期状态趋势</label><select id="p2_form">
+      <option value="">请选择</option><option value="显著上升">显著上升</option><option value="小幅上升">小幅上升</option>
+      <option value="平稳">平稳</option><option value="小幅下滑">小幅下滑</option><option value="显著下滑">显著下滑</option><option value="仅有梯队比赛">仅有梯队比赛, 趋势不明</option>
+    </select></div>
+    <div class="half"><label>职业生涯高光时刻</label><input type="text" id="p2_highlights" placeholder="例: U17欧青赛MVP / 世界杯决赛进球 / XX纪录"></div>
+  </div>
+</div>
+
+<!-- ====== 模块3: 球员轨迹 ====== -->
+<div class="section">
+  <h2>3. 球员轨迹判断</h2>
+  <p class="hint">判断球员处于职业生涯的哪个阶段，以及未来发展方向</p>
+  <div class="row">
+    <div class="third"><label>是否已职业首秀</label><select id="p3_debut">
+      <option value="">请选择</option><option value="已首秀(一线队)">已首秀(一线队)</option>
+      <option value="仅B队/预备队">仅B队/预备队</option>
+      <option value="仅青年队比赛">仅青年队比赛(U19及以下)</option>
+      <option value="暂无任何职业比赛">暂无任何职业比赛</option>
+    </select></div>
+    <div class="third"><label>年龄阶段</label><select id="p3_age_phase">
+      <option value="">请选择</option><option value="青训期(10-15)">青训期 (10-15岁)</option>
+      <option value="新秀期(16-18)">新秀期 (16-18岁)</option>
+      <option value="上升期(19-23)">上升期 (19-23岁)</option>
+      <option value="巅峰初期(24-27)">巅峰初期 (24-27岁)</option>
+      <option value="巅峰期(28-30)">巅峰期 (28-30岁)</option>
+      <option value="巅峰后期(31-33)">巅峰后期 (31-33岁)</option>
+      <option value="下滑期(34+)">下滑期 (34岁以上)</option>
+      <option value="生涯末期(37+)">生涯末期 (37岁以上)</option>
+    </select></div>
+    <div class="third"><label>发展曲线</label><select id="p3_trajectory">
+      <option value="">请选择</option><option value="快速上升">快速上升</option><option value="稳步上升">稳步上升</option>
+      <option value="平台期">平台期</option><option value="缓慢下滑">缓慢下滑</option><option value="快速下滑">快速下滑</option>
+    </select></div>
+  </div>
+  <div class="row">
+    <div class="half"><label>俱乐部环境</label><input type="text" id="p3_club_env" placeholder="例: 巴萨B队, 等待一线队机会 / 教练信任, 战术核心"></div>
+    <div class="half"><label>转会可能性</label><select id="p3_transfer">
+      <option value="">请选择</option><option value="大概率转会豪门">大概率转会豪门</option>
+      <option value="有传闻但不确定">有传闻但不确定</option>
+      <option value="稳定留队">稳定留队</option>
+      <option value="可能被清洗">可能被清洗</option>
+      <option value="不适用(青训球员)">不适用 (青训球员)</option>
+    </select></div>
+  </div>
+  <div><label>伤病史</label><input type="text" id="p3_injury" placeholder="例: 无重大伤病 / 2024年ACL大伤休战6个月 / 未知"></div>
+</div>
+
+<!-- ====== 模块4: 横向对比 ====== -->
+<div class="section">
+  <h2>4. 横向对比 <span style="font-size:11px;color:#f59e0b;">[需Claude搜索+你判断]</span></h2>
+  <p class="hint">找2-3个同类型、同级别球员做锚点，对比他们的卡价来判断当前价位是否合理</p>
+  <div class="row">
+    <div class="half"><label>同位置同龄段全球排名/级别</label><input type="text" id="p4_ranking" placeholder="例: 16岁中场全球Top10 / 当世前3中锋"></div>
+    <div class="half"><label>模板球员 (发展轨迹像谁)</label><input type="text" id="p4_template" placeholder="例: 类似早期的佩德里 / 小号德布劳内"></div>
+  </div>
+  <div class="row">
+    <div class="half"><label>对比球员A (同类型)</label><input type="text" id="p4_compA_name" placeholder="例: Gavi (加维)"></div>
+    <div class="half"><label>对比球员A同级别卡价</label><input type="text" id="p4_compA_price" placeholder="例: Topps Chrome RC /75 PSA10 = 3000-4000元"></div>
+  </div>
+  <div class="row">
+    <div class="half"><label>对比球员B (同类型)</label><input type="text" id="p4_compB_name" placeholder="例: Pedri (佩德里)"></div>
+    <div class="half"><label>对比球员B同级别卡价</label><input type="text" id="p4_compB_price" placeholder="例: Topps Chrome RC /75 PSA10 = 5000-7000元"></div>
+  </div>
+  <div class="row">
+    <div class="half"><label>对比球员C (选填)</label><input type="text" id="p4_compC_name" placeholder="例: 同一青训体系的师兄"></div>
+    <div class="half"><label>对比球员C同级别卡价</label><input type="text" id="p4_compC_price" placeholder=""></div>
+  </div>
+  <div><label>你的对比结论</label><textarea id="p4_comparison_note" rows="2" placeholder="例: 通卡拉目前的认知度远低于加维和佩德里同年龄时期, 但U17 MVP的含金量与两位前辈的早期荣誉相当。当前价格可能处于价值发现前夜, 被低估。"></textarea></div>
+</div>
+
+<!-- ====== 模块5: 卡片属性 ====== -->
+<div class="section">
+  <h2>5. 卡片属性</h2>
+  <div class="row">
+    <div class="third"><label>品牌 *</label><select id="p5_brand">
+      <option value="">请选择</option><option value="Topps">Topps</option><option value="Panini">Panini</option><option value="Futera">Futera</option><option value="其他">其他</option>
+    </select></div>
+    <div class="third"><label>系列 *</label><input type="text" id="p5_set" placeholder="例: Chrome / Bowman 1st / Prizm / Merlin"></div>
+    <div class="third"><label>年份 *</label><input type="text" id="p5_year" placeholder="例: 2025-26"></div>
+  </div>
+  <div class="row">
+    <div class="third"><label>卡片类型 *</label><select id="p5_type">
+      <option value="">请选择</option><option value="RC">RC (新秀卡)</option>
+      <option value="Bowman 1st">Bowman 1st (首秀卡)</option>
+      <option value="Base">Base (普卡)</option>
+      <option value="Parallel">Parallel (平行/折射)</option>
+      <option value="Insert">Insert (特卡)</option>
+      <option value="Auto">Auto (签名卡)</option>
+      <option value="Patch">Patch (球衣卡)</option>
+      <option value="Auto+Patch">Auto+Patch (签名球衣)</option>
+      <option value="1/1">1/1 (独一无二)</option>
+    </select></div>
+    <div class="third"><label>是否为新秀年(RC) / Bowman 1st</label><select id="p5_is_rc">
+      <option value="">请选择</option><option value="RC">RC (新秀年)——核心加分</option>
+      <option value="Bowman 1st">Bowman 1st——长期最值钱的版本</option>
+      <option value="否">否——非新秀年</option>
+    </select></div>
+    <div class="third"><label>编号 / 平行类型</label><input type="text" id="p5_numbered" placeholder="例: 紫折/75 / 红绿圈圈折/8 / 银折射不限量"></div>
+  </div>
+  <div class="row">
+    <div class="third"><label>评分公司</label><select id="p5_grader">
+      <option value="">请选择</option><option value="PSA">PSA</option><option value="BGS">BGS</option><option value="SGC">SGC</option><option value="RAW">RAW (未评分)</option>
+    </select></div>
+    <div class="third"><label>评分等级</label><input type="text" id="p5_grade" placeholder="例: 10 / 9.5 / 9 / RAW"></div>
+    <div class="third"><label>POP存世量(同分)</label><input type="text" id="p5_pop" placeholder="例: PSA10 POP 3 / 未知"></div>
+  </div>
+  <div class="row">
+    <div class="half"><label>卡片品相描述</label><input type="text" id="p5_condition" placeholder="例: 四角尖锐, 居中良好 / 卡面有一处小白点"></div>
+    <div class="half"><label>购入成本(你的持仓价)</label><input type="text" id="p5_cost" placeholder="例: 800元 (2026.7购入)"></div>
+  </div>
+</div>
+
+<!-- ====== 模块6: 市场行情 ====== -->
+<div class="section">
+  <h2>6. 市场行情 <span style="font-size:11px;color:#4ade80;">[Claude可搜+你自己调研]</span></h2>
+  <div class="row">
+    <div class="half"><label>当前市场价(最近成交) *</label><input type="text" id="p6_current_price" placeholder="例: 800-1200元(近3笔) / 暂无公开成交"></div>
+    <div class="half"><label>近3个月价格走势</label><select id="p6_trend">
+      <option value="">请选择</option><option value="快速上涨(30%+)">快速上涨(30%+)</option>
+      <option value="稳步上涨(10-30%)">稳步上涨(10-30%)</option>
+      <option value="横盘(+-10%)">横盘(+-10%)</option>
+      <option value="小幅下跌(-10~-30%)">小幅下跌(-10~-30%)</option>
+      <option value="快速下跌(-30%+)">快速下跌(-30%+)</option>
+      <option value="无足够交易数据">无足够交易数据(新卡/太稀有)</option>
+    </select></div>
+  </div>
+  <div class="row">
+    <div class="half"><label>同球员其他卡近期表现</label><input type="text" id="p6_other_cards" placeholder="例: 银折不限量同时期横盘; /75紫折暂无成交参照"></div>
+    <div class="half"><label>市场在售数量/流动性评价</label><input type="text" id="p6_liquidity" placeholder="例: eBay在售3张, 月均成交0-1张, 流动性极低 / 流动性好"></div>
+  </div>
+</div>
+
+<!-- ====== 模块7: 催化剂 ====== -->
+<div class="section">
+  <h2>7. 催化剂 (近期6-24个月) <span style="font-size:11px;color:#4ade80;">[Claude可搜]</span></h2>
+  <p class="hint">哪些事件可能在近期发生, 并显著影响卡价? 青训球员重点关注: 一线队首秀、大赛MVP、转会传闻</p>
+  <div class="row">
+    <div class="half"><label>近期大赛</label><input type="text" id="p7_tournament" placeholder="例: 2026世界杯 / 2027 U20世界杯 / 2026-27欧冠 / 2027 U17欧青赛"></div>
+    <div class="half"><label>一线队首秀预期</label><input type="text" id="p7_debut_chance" placeholder="例: 预计2026-27赛季季前赛有机会 / 已在一线队训练"></div>
+  </div>
+  <div class="row">
+    <div class="half"><label>转会窗口机会</label><input type="text" id="p7_transfer_opp" placeholder="例: 多家豪门关注 / 不适用(青训阶段)"></div>
+    <div class="half"><label>个人荣誉机会</label><input type="text" id="p7_awards" placeholder="例: 已获U17欧青赛MVP / 金童奖提名可能"></div>
+  </div>
+  <div class="row">
+    <div class="half"><label>破纪录可能</label><input type="text" id="p7_records" placeholder="例: 有望成为巴萨最年轻XX纪录 / 暂无"></div>
+    <div class="half"><label>媒体叙事/话题性</label><input type="text" id="p7_narrative" placeholder="例: "下一个佩德里"的叙事已形成; U17MVP自带光环"></div>
+  </div>
+</div>
+
+<!-- ====== 模块8: 风险因素 ====== -->
+<div class="section">
+  <h2>8. 风险因素评分</h2>
+  <p class="hint">分数越高 = 风险越大（1=几乎无风险，10=极高风险）</p>
+
+  <div class="score-range"><span>1 (低风险)</span><span>10 (高风险)</span></div>
+  <div class="score-group">
+    <span class="score-name">伤病风险</span>
+    <input type="range" class="score-slider" id="r8_injury" min="1" max="10" value="3" oninput="this.nextElementSibling.textContent=this.value"><span class="score-num">3</span>
+  </div>
+  <div class="score-group">
+    <span class="score-name">竞争风险(同位置)</span>
+    <input type="range" class="score-slider" id="r8_competition" min="1" max="10" value="3" oninput="this.nextElementSibling.textContent=this.value"><span class="score-num">3</span>
+  </div>
+  <div class="score-group">
+    <span class="score-name">俱乐部/球队风险</span>
+    <input type="range" class="score-slider" id="r8_club_risk" min="1" max="10" value="3" oninput="this.nextElementSibling.textContent=this.value"><span class="score-num">3</span>
+  </div>
+  <div class="score-group">
+    <span class="score-name">市场泡沫风险</span>
+    <input type="range" class="score-slider" id="r8_bubble" min="1" max="10" value="5" oninput="this.nextElementSibling.textContent=this.value"><span class="score-num">5</span>
+  </div>
+  <div class="score-group">
+    <span class="score-name">流动性风险</span>
+    <input type="range" class="score-slider" id="r8_liquidity" min="1" max="10" value="4" oninput="this.nextElementSibling.textContent=this.value"><span class="score-num">4</span>
+  </div>
+  <div><label>其他风险补充</label><textarea id="r8_other" rows="2" placeholder="例: 球员合同2027到期 / 卡太新, 定价不透明 / Bowman 1st概念在足球圈尚未成熟"></textarea></div>
+</div>
+
+<!-- ====== 模块9: 综合判断 ====== -->
+<div class="section">
+  <h2>9. 你的综合判断 (球探眼光 + 市场直觉)</h2>
+  <div class="row">
+    <div class="half"><label>你对球员未来的直觉判断</label><select id="p9_gut">
+      <option value="">请选择</option><option value="非常看好">非常看好 - 坚信会成才</option>
+      <option value="比较看好">比较看好 - 大概率能打出来</option>
+      <option value="不确定">不确定 - 有变数</option>
+      <option value="不太看好">不太看好 - 有硬伤</option>
+    </select></div>
+    <div class="half"><label>你对该卡的信心等级</label><select id="p9_confidence">
+      <option value="">请选择</option><option value="极高">极高 - 重仓持有</option>
+      <option value="较高">较高 - 适量配置</option>
+      <option value="一般">一般 - 轻仓观望</option>
+      <option value="较低">较低 - 准备减仓</option>
+    </select></div>
+  </div>
+  <div class="row">
+    <div class="half"><label>预计持有周期</label><select id="p9_hold_period">
+      <option value="">请选择</option><option value="6个月内">6个月内 (短线)</option>
+      <option value="6-18个月">6-18个月 (中线)</option>
+      <option value="1-3年">1-3年 (长线)</option>
+      <option value="3-5年">3-5年 (超长线)</option>
+      <option value="5年以上">5年以上 (收藏级)</option>
+    </select></div>
+    <div class="half"><label>仓位占比 (心理参考)</label><input type="text" id="p9_position_size" placeholder="例: 占球星卡总仓位的15% / 试探性建仓"></div>
+  </div>
+  <div><label>补充说明 (任何AI搜不到的信息)</label><textarea id="p9_note" rows="2" placeholder="例: 我在现场看过他的比赛, 他的拿球转身那一下真的跟佩德里一样丝滑, U17MVP实至名归。这张/8我是从西班牙藏家手里收的, 亚洲可能就这一张。"></textarea></div>
+</div>
+
+<!-- 按钮 -->
+<div class="btn-row">
+  <button class="btn btn-reset" onclick="resetForm()">重置表单</button>
+  <button class="btn btn-predict" onclick="generatePrediction()">生成预测报告</button>
+</div>
+
+<!-- 结果区 -->
+<div class="result-card" id="resultCard">
+  <h2 id="resultTitle" style="color:#e2b04a;margin-bottom:16px;"></h2>
+  <div id="resultContent"></div>
+</div>
+
+</div>
+
+<footer>
+  <p>Card Price Predictor v2 · ZZ 用 Claude Code 制作 · 信息搜集 + 综合预测系统</p>
+</footer>
+
+<script>
+function g(id){return document.getElementById(id).value.trim()}
+function gs(id){return document.getElementById(id).value}
+function gi(id){return parseInt(document.getElementById(id).value)}
+
+function generatePrediction(){
+  var name=g('p1_name');if(!name){alert('请至少填写球员姓名');return}
+  var currentPrice=g('p6_current_price');if(!currentPrice){alert('请填写当前市场价(模块6)');return}
+
+  // 价格解析
+  var priceMid=0,priceLow=0,priceHigh=0;
+  var pm=currentPrice.match(/(\d+)[^\d]*[~\-到至][^\d]*(\d+)/);
+  if(pm){priceLow=parseInt(pm[1]);priceHigh=parseInt(pm[2]);priceMid=Math.round((priceLow+priceHigh)/2)}
+  else{var sm=currentPrice.match(/(\d+)/);if(sm){priceMid=parseInt(sm[1]);priceLow=Math.round(priceMid*.85);priceHigh=Math.round(priceMid*1.15)}else priceMid=0}
+
+  // 位置稀缺性
+  var pos=gs('p1_position'),posBonus=0;
+  if(pos.indexOf('前锋')!==-1||pos.indexOf('边锋')!==-1)posBonus=0.8;
+  else if(pos.indexOf('中场')!==-1&&pos.indexOf('防守')===-1)posBonus=0.5;
+  else if(pos.indexOf('防守')!==-1)posBonus=0.2;
+  else if(pos.indexOf('后卫')!==-1)posBonus=0.1;
+  else if(pos==='门将'||pos.indexOf('门将')!==-1)posBonus=-0.3;
+
+  // 短期评分
+  var formMap={'显著上升':2,'小幅上升':1,'平稳':0,'小幅下滑':-1,'显著下滑':-2,'仅有梯队比赛':0.5};
+  var formScore=formMap[gs('p2_form')]||0;
+  var trendMap={'快速上涨(30%+)':2,'稳步上涨(10-30%)':1.5,'横盘(+-10%)':0,'小幅下跌(-10~-30%)':-1,'快速下跌(-30%+)':-2,'无足够交易数据':0};
+  var trendScore=trendMap[gs('p6_trend')]||0;
+
+  var catalystScore=0;
+  if(g('p7_tournament')) catalystScore+=1.5;
+  if(g('p7_debut_chance')) catalystScore+=1.5;
+  if(g('p7_transfer_opp')) catalystScore+=1;
+  if(g('p7_awards')) catalystScore+=1;
+  if(g('p7_records')) catalystScore+=0.5;
+  if(g('p7_narrative')) catalystScore+=0.5;
+
+  var scoreST=5+formScore+trendScore+catalystScore+posBonus;
+  scoreST=Math.max(1,Math.min(10,scoreST));
+
+  // 中期评分
+  var trajMap={'快速上升':2.5,'稳步上升':1.5,'平台期':0,'缓慢下滑':-1.5,'快速下滑':-2.5};
+  var trajScore=trajMap[gs('p3_trajectory')]||0;
+  var transferMap={'大概率转会豪门':2,'有传闻但不确定':0.5,'稳定留队':0,'可能被清洗':-1.5,'不适用(青训球员)':0.5};
+  var transferScore=transferMap[gs('p3_transfer')]||0;
+  var debutMap={'已首秀(一线队)':1.5,'仅B队/预备队':0.5,'仅青年队比赛(U19及以下)':0.2,'暂无任何职业比赛':-0.5};
+  var debutScore=debutMap[gs('p3_debut')]||0;
+
+  var isRC=gs('p5_is_rc');
+  var rcBonus=0;
+  if(isRC==='RC')rcBonus=1.5;else if(isRC==='Bowman 1st')rcBonus=2;
+  var numbered=g('p5_numbered'),numberedBonus=0;
+  if(numbered.indexOf('1/1')!==-1||numbered.indexOf('/1')!==-1)numberedBonus=2;
+  else if(/\/([1-9]|10)\b/.test(numbered))numberedBonus=1.5;
+  else if(/\/([1-2][0-9]|25|50)\b/.test(numbered))numberedBonus=1;
+  else if(/\d/.test(numbered))numberedBonus=0.5;
+  var grade=g('p5_grade'),gradeBonus=0;
+  if(grade==='10')gradeBonus=1;else if(grade==='9.5')gradeBonus=0.5;
+
+  var scoreMT=5+trajScore+transferScore+debutScore+rcBonus+numberedBonus+gradeBonus+posBonus;
+  scoreMT=Math.max(1,Math.min(10,scoreMT));
+
+  // 长期评分
+  var phaseMap={'青训期(10-15)':3,'新秀期(16-18)':2.5,'上升期(19-23)':1.5,'巅峰初期(24-27)':1,'巅峰期(28-30)':0.5,'巅峰后期(31-33)':-1,'下滑期(34+)':-2.5,'生涯末期(37+)':-3};
+  var phaseScore=phaseMap[gs('p3_age_phase')]||0;
+  var statusMap={'绝对核心':2,'主力':1,'轮换':0,'替补':-1,'边缘':-2,'青年队/未出道':0};
+  var statusScore=statusMap[gs('p2a_status')]||0;
+  var gutMap={'非常看好':2,'比较看好':1,'不确定':0,'不太看好':-1.5};
+  var gutScore=gutMap[gs('p9_gut')]||0;
+
+  var scoreLT=5+phaseScore+statusScore+rcBonus+gutScore+posBonus;
+  scoreLT=Math.max(1,Math.min(10,scoreLT));
+
+  // 风险调整
+  var riskSum=gi('r8_injury')+gi('r8_competition')+gi('r8_club_risk')+gi('r8_bubble')+gi('r8_liquidity');
+  var riskAvg=riskSum/5;
+  var adjST=scoreST-(riskAvg-5)*0.08;
+  var adjMT=scoreMT-(riskAvg-5)*0.12;
+  var adjLT=scoreLT-(riskAvg-5)*0.15;
+
+  // 价格预测
+  function predictPrice(score,months){
+    var ar;
+    if(score>=8.5)ar=0.38;else if(score>=7.5)ar=0.20;else if(score>=6.5)ar=0.08;
+    else if(score>=5.5)ar=0.00;else if(score>=4.5)ar=-0.10;else ar=-0.22;
+    var mult=1+ar*(months/12);
+    return{low:Math.round(priceMid*mult*.85),mid:Math.round(priceMid*mult),high:Math.round(priceMid*mult*1.15),mult:(mult*100-100).toFixed(1)};
+  }
+
+  var predST=predictPrice(adjST,6),predMT=predictPrice(adjMT,18),predLT=predictPrice(adjLT,42);
+
+  function confidence(sc,filled){if(filled<15)return '中偏低(信息不足)';return sc>=8?'高':sc>=6?'中':'低'}
+  var allInputs=document.querySelectorAll('input[type="text"], textarea');
+  var filled=0;for(var i=0;i<allInputs.length;i++){if(allInputs[i].value.trim())filled++}
+  var totalInputs=allInputs.length;
+
+  // 操作建议
+  var rec='',recDetail='',sellTarget='';
+  if(adjMT>=7.5&&adjST>=6){rec='BUY/HOLD';recDetail='中短期均看好, 当前价位有较好的风险收益比。若短期出现回调, 是加仓良机。';sellTarget='目标卖出区间: '+predMT.high+' - '+Math.round(predMT.high*1.3)+' 元 (中期维度)'}
+  else if(adjMT>=6.5&&adjST>=5){rec='HOLD';recDetail='中期逻辑清晰, 短期可能震荡。不建议追高, 也不建议恐慌抛售。';sellTarget='目标卖出区间: '+predMT.high+' - '+Math.round(predMT.high*1.2)+' 元 (中期维度)'}
+  else if(adjMT>=8&&adjST>=7){rec='STRONG BUY';recDetail='多重利好叠加, 当前价格可能处于低估区间。建议在流动性允许的情况下积极配置。';sellTarget='目标卖出区间: '+predMT.high+' - '+Math.round(predMT.high*1.4)+' 元 (中期维度)'}
+  else if(adjMT<5&&adjST<4.5){rec='SELL/REDUCE';recDetail='中期逻辑弱化, 短期面临下行压力。建议在反弹时逐步减仓。';sellTarget='建议在反弹至成本价附近时评估减仓'}
+  else{rec='HOLD/WATCH';recDetail='信号不够明确, 建议维持现有仓位, 等待更多信息后再做决策。';sellTarget='暂不设定目标卖出价, 等待催化剂明朗'}
+
+  // 成本分析
+  var costStr=g('p5_cost'),costVal=0,costNote='';
+  if(costStr){var cm=costStr.match(/(\d+)/);if(cm)costVal=parseInt(cm[1])}
+  if(costVal>0&&priceMid>0){var pnl=((priceMid-costVal)/costVal*100).toFixed(1);
+    costNote=pnl>0?'当前持仓浮盈约 +'+pnl+'% (成本'+costVal+'元, 现价约'+priceMid+'元)':'当前持仓浮亏约 '+pnl+'% (成本'+costVal+'元, 现价约'+priceMid+'元)'}
+
+  // 横向对比
+  var comps=[],compA=g('p4_compA_name'),compAP=g('p4_compA_price'),compB=g('p4_compB_name'),compBP=g('p4_compB_price'),compC=g('p4_compC_name'),compCP=g('p4_compC_price');
+  if(compA&&compAP)comps.push(compA+' ('+compAP+')');if(compB&&compBP)comps.push(compB+' ('+compBP+')');if(compC&&compCP)comps.push(compC+' ('+compCP+')');
+  var compNote=comps.length>0?'对比锚点: '+comps.join(' / ')+'\n目前'+name+'的卡价相对同行: '+(adjMT>=7?'可能被低估, 有追赶空间':adjMT>=5.5?'处于合理区间':'可能偏高, 需谨慎'):'(未填写对比球员, 建议补充以获得更准确的锚定分析)';
+
+  // 风险列表
+  var risks=[];if(gi('r8_injury')>=7)risks.push('伤病风险较高 ('+gi('r8_injury')+'/10)');if(gi('r8_competition')>=7)risks.push('同位置竞争激烈 ('+gi('r8_competition')+'/10)');if(gi('r8_club_risk')>=7)risks.push('俱乐部存在不确定性 ('+gi('r8_club_risk')+'/10)');if(gi('r8_bubble')>=7)risks.push('市场可能存在泡沫 ('+gi('r8_bubble')+'/10)');if(gi('r8_liquidity')>=7)risks.push('流动性较差, 出手困难 ('+gi('r8_liquidity')+'/10)');if(risks.length===0)risks.push('各项风险均在可控范围内');if(g('r8_other'))risks.push(g('r8_other'));
+
+  // 构建报告
+  var r='========================================\n  '+name+' 球星卡价格预测报告\n  '+ (g('p5_year')||'?')+' '+ (g('p5_brand')||'')+' '+ (g('p5_set')||'');
+  if(g('p5_type'))r+=' '+g('p5_type');if(g('p5_numbered'))r+=' '+g('p5_numbered');if(g('p5_grade'))r+=' PSA/BGS '+g('p5_grade');
+  r+='\n  预测日期: '+new Date().toISOString().split('T')[0]+'\n========================================\n\n';
+  r+='--- 预测总览\n\n  当前市场价: '+currentPrice+'\n';if(costNote)r+='  '+costNote+'\n';
+  r+='\n  [短期 6个月] 评分 '+adjST.toFixed(1)+'/10  方向: '+(adjST>=7?'看涨':adjST>=5.5?'稳中偏强':adjST>=4.5?'震荡偏弱':'看跌')+'\n    目标区间: '+predST.low+' - '+predST.high+' 元 (中位'+predST.mid+'元, 变化 '+predST.mult+'%)  置信度: '+confidence(adjST,filled)+'\n\n';
+  r+='  [中期 1-2年] 评分 '+adjMT.toFixed(1)+'/10  方向: '+(adjMT>=7?'看涨':adjMT>=5.5?'稳中偏强':adjMT>=4.5?'震荡偏弱':'看跌')+'\n    目标区间: '+predMT.low+' - '+predMT.high+' 元 (中位'+predMT.mid+'元, 变化 '+predMT.mult+'%)  置信度: '+confidence(adjMT,filled)+'\n\n';
+  r+='  [长期 3-5年] 评分 '+adjLT.toFixed(1)+'/10  方向: '+(adjLT>=7?'看涨':adjLT>=5.5?'稳中偏强':adjLT>=4.5?'震荡偏弱':'看跌')+'\n    目标区间: '+predLT.low+' - '+predLT.high+' 元 (中位'+predLT.mid+'元, 变化 '+predLT.mult+'%)  置信度: '+confidence(adjLT,filled)+'\n\n';
+  r+='--- 横向对比\n\n'+compNote+'\n\n';
+  r+='--- 风险分析\n\n  综合风险评分: '+riskAvg.toFixed(1)+'/10\n';
+  for(var ri=0;ri<risks.length;ri++)r+='  - '+risks[ri]+'\n';
+  r+='\n--- 操作建议\n\n  ['+rec+']\n  '+recDetail+'\n  '+sellTarget+'\n\n';
+  r+='--- 关键假设\n  1. 球员不发生重大伤病\n  2. 足球卡市场不发生系统性崩盘\n  3. 球员发展轨迹符合当前趋势判断\n\n';
+  r+='--- 信息完整度\n  已填写: '+filled+'/'+totalInputs+' 项 ('+Math.round(filled/totalInputs*100)+'%)\n'+(filled/totalInputs<0.5?'  [注意] 信息完整度偏低, 预测仅供参考\n':'');
+  r+='\n========================================\n  免责声明: 本预测不构成投资建议\n  卡市有风险, 操作需谨慎\n  ZZ · Claude Code · v2.0\n========================================\n';
+
+  // 显示
+  var card=document.getElementById('resultCard');card.classList.add('show');
+  document.getElementById('resultTitle').innerHTML=name+' | '+(g('p5_year')||'?')+' '+ (g('p5_brand')||'')+' '+ (g('p5_set')||'')+' | 短期 '+(adjST>=7?'看涨':adjST>=5.5?'偏强':'偏弱')+' | 中期 '+(adjMT>=7?'看涨':adjMT>=5.5?'偏强':'偏弱');
+
+  var h='<div class="result-text" id="reportText">'+esc(r)+'</div>';
+  h+='<table class="prediction-table"><tr><th>时间维度</th><th>评分</th><th>方向</th><th>目标区间</th><th>置信度</th></tr>';
+  h+='<tr><td>短期(6月)</td><td>'+adjST.toFixed(1)+'/10</td><td class="'+(adjST>=7?'bullish':adjST>=5.5?'neutral':'bearish')+'">'+(adjST>=7?'看涨':adjST>=5.5?'偏强':'偏弱')+'</td><td>'+predST.low+'-'+predST.high+'元</td><td>'+confidence(adjST,filled)+'</td></tr>';
+  h+='<tr><td>中期(1-2年)</td><td>'+adjMT.toFixed(1)+'/10</td><td class="'+(adjMT>=7?'bullish':adjMT>=5.5?'neutral':'bearish')+'">'+(adjMT>=7?'看涨':adjMT>=5.5?'偏强':'偏弱')+'</td><td>'+predMT.low+'-'+predMT.high+'元</td><td>'+confidence(adjMT,filled)+'</td></tr>';
+  h+='<tr><td>长期(3-5年)</td><td>'+adjLT.toFixed(1)+'/10</td><td class="'+(adjLT>=7?'bullish':adjLT>=5.5?'neutral':'bearish')+'">'+(adjLT>=7?'看涨':adjLT>=5.5?'偏强':'偏弱')+'</td><td>'+predLT.low+'-'+predLT.high+'元</td><td>'+confidence(adjLT,filled)+'</td></tr>';
+  h+='</table>';
+  h+='<div style="margin:12px 0;"><span style="font-size:13px;color:#9090a0;">风险评级: </span><span class="risk-badge '+(riskAvg>=7?'risk-high':riskAvg>=5?'risk-mid':'risk-low')+'">综合风险 '+riskAvg.toFixed(1)+'/10</span>';
+  if(gi('r8_bubble')>=7)h+='<span class="risk-badge risk-high">泡沫风险高</span>';
+  if(gi('r8_injury')>=7)h+='<span class="risk-badge risk-high">伤病风险</span>';
+  if(gi('r8_liquidity')>=7)h+='<span class="risk-badge risk-mid">流动性差</span></div>';
+  h+='<div style="background:#0e0e1a;border:1px solid #2a2a40;border-radius:8px;padding:16px;margin:12px 0;"><p style="font-size:16px;font-weight:700;color:#e2b04a;margin-bottom:6px;">['+rec+']</p><p style="font-size:14px;color:#c0c0d0;">'+recDetail+'</p><p style="font-size:13px;color:#9090a0;margin-top:6px;">'+sellTarget+'</p></div>';
+  h+='<p style="font-size:12px;color:#6a6a80;margin-top:8px;">信息完整度: '+filled+'/'+totalInputs+' ('+Math.round(filled/totalInputs*100)+'%)</p>';
+  h+='<button class="btn btn-predict" style="margin-top:12px;width:auto;padding:10px 24px;" onclick="copyReport()">复制完整报告</button>';
+  document.getElementById('resultContent').innerHTML=h;
+  document.getElementById('resultCard').scrollIntoView({behavior:'smooth'});
+}
+
+function esc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function copyReport(){var el=document.getElementById('reportText');if(!el)return;navigator.clipboard.writeText(el.innerText).then(function(){alert('报告已复制到剪贴板')}).catch(function(){var range=document.createRange();range.selectNode(el);window.getSelection().removeAllRanges();window.getSelection().addRange(range);alert('已选中, 请手动 Ctrl+C 复制')})}
+function resetForm(){
+  var inputs=document.querySelectorAll('input[type="text"], textarea');
+  for(var i=0;i<inputs.length;i++)inputs[i].value='';
+  var selects=document.querySelectorAll('select');for(var i=0;i<selects.length;i++)selects[i].selectedIndex=0;
+  var sliders=document.querySelectorAll('.score-slider');
+  for(var i=0;i<sliders.length;i++){
+    var defVals=[3,3,3,5,4];sliders[i].value=defVals[i]||3;sliders[i].nextElementSibling.textContent=sliders[i].value
+  }
+  document.getElementById('resultCard').classList.remove('show');window.scrollTo({top:0,behavior:'smooth'})
+}
+</script>
+</body>
+</html>
