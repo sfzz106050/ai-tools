@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>球星卡看板 · ZZ</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Microsoft YaHei",sans-serif;background:#f5f5f5;color:#333}
+.header{background:#fff;padding:16px;text-align:center;border-bottom:2px solid #e2b04a}
+.header h1{font-size:18px}.header p{font-size:11px;color:#999}
+.container{max-width:700px;margin:0 auto;padding:14px}
+.kpi-row{display:flex;gap:10px;margin-bottom:14px}
+.kpi{flex:1;background:#fff;border-radius:10px;padding:14px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.kpi-num{font-size:26px;font-weight:800;color:#1a1a2e}.kpi-label{font-size:10px;color:#999;margin-top:4px}
+.chart-card{background:#fff;border-radius:10px;padding:16px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.chart-card h3{font-size:14px;margin-bottom:12px;color:#1a1a2e}
+.bar-chart{display:flex;align-items:flex-end;gap:12px;padding:0 8px;min-height:160px}
+.bar-col{flex:1;text-align:center}
+.bar-fill{margin:0 auto 6px;border-radius:4px 4px 0 0;transition:height .6s ease;min-width:24px}
+.bar-name{font-size:10px;color:#888;margin-top:4px;word-break:break-all}
+.bar-val{font-size:11px;font-weight:700;color:#1a1a2e}
+.brand-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;font-size:12px}
+.brand-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.brand-bar-wrap{flex:1;height:8px;background:#f0f0f0;border-radius:4px;overflow:hidden}
+.brand-bar-fill{height:100%;border-radius:4px}
+.brand-count{font-weight:700;min-width:30px;text-align:right}
+.recents{font-size:12px}.recents li{padding:6px 0;border-bottom:1px solid #f5f5f5;display:flex;justify-content:space-between}
+.recents li span{color:#999}
+.empty{text-align:center;padding:40px;color:#ddd}
+footer{text-align:center;padding:16px;color:#ddd;font-size:10px}
+</style>
+</head>
+<body>
+<div class="header"><h1>🃏 球星卡数据看板</h1><p>自动读取数据库 · 可视化 + 预测对比</p></div>
+<div class="container">
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-num" id="kTotal">0</div><div class="kpi-label">总张数</div></div>
+    <div class="kpi"><div class="kpi-num" id="kPlayers">0</div><div class="kpi-label">球员数</div></div>
+    <div class="kpi"><div class="kpi-num" id="kBrands">0</div><div class="kpi-label">品牌数</div></div>
+    <div class="kpi"><div class="kpi-num" id="kAvgPrice">--</div><div class="kpi-label">均价</div></div>
+  </div>
+  <div class="chart-card"><h3>📊 球员分布</h3><div class="bar-chart" id="playerChart"></div></div>
+  <div class="chart-card"><h3>🏷️ 品牌分布</h3><div id="brandChart"></div></div>
+  <div class="chart-card"><h3>📦 系列分布</h3><div class="bar-chart" id="seriesChart"></div></div>
+  <div class="chart-card" style="border:1px solid rgba(226,176,74,.3);"><h3>🎯 预测 vs 实际</h3><div id="predCompare"></div></div>
+  <div class="chart-card"><h3>🕐 最近录入</h3><ul class="recents" id="recents"></ul></div>
+</div>
+<footer>球星卡看板 · ZZ</footer>
+<script>
+function esc(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML}
+function loadDB(){try{return JSON.parse(localStorage.getItem('zzCardDB_v2')||'[]')}catch(e){return[]}}
+var COLORS=['#e63946','#457b9d','#2a9d8f','#e9c46a','#f4a261','#264653','#a8dadc','#e76f51','#6d6875','#b5838d'];
+
+function render(){
+  var data=loadDB();
+  if(data.length===0){document.getElementById('playerChart').innerHTML='<div class="empty">暂无数据</div>';return}
+  var players={},brands={},series={},totalPrice=0,priceCount=0;
+  for(var i=0;i<data.length;i++){
+    var c=data[i];players[c.player]=(players[c.player]||0)+1;brands[c.brand]=(brands[c.brand]||0)+1;series[c.set]=(series[c.set]||0)+1;
+    var pr=parseFloat(c.cost);if(pr>0){totalPrice+=pr;priceCount++}
+  }
+  document.getElementById('kTotal').textContent=data.length;
+  document.getElementById('kPlayers').textContent=Object.keys(players).length;
+  document.getElementById('kBrands').textContent=Object.keys(brands).length;
+  document.getElementById('kAvgPrice').textContent=priceCount>0?(totalPrice/priceCount).toFixed(0)+'元':'--';
+
+  var pArr=[];for(var k in players)pArr.push({name:k,count:players[k]});pArr.sort(function(a,b){return b.count-a.count});
+  var maxPC=pArr[0]?pArr[0].count:1,barMaxH=140,pChart='';
+  for(var i=0;i<Math.min(pArr.length,8);i++){var h=Math.round(pArr[i].count/maxPC*barMaxH);pChart+='<div class="bar-col"><div class="bar-val">'+pArr[i].count+'</div><div class="bar-fill" style="height:'+h+'px;background:'+COLORS[i%COLORS.length]+'"></div><div class="bar-name">'+pArr[i].name+'</div></div>'}
+  document.getElementById('playerChart').innerHTML=pChart;
+
+  var bArr=[];for(var k in brands)bArr.push({name:k,count:brands[k]});bArr.sort(function(a,b){return b.count-a.count});
+  var maxBC=bArr[0]?bArr[0].count:1,bChart='';
+  for(var i=0;i<bArr.length;i++){var w=Math.round(bArr[i].count/maxBC*100);bChart+='<div class="brand-row"><span class="brand-dot" style="background:'+COLORS[i%COLORS.length]+'"></span><span style="min-width:50px;font-size:11px;">'+bArr[i].name+'</span><div class="brand-bar-wrap"><div class="brand-bar-fill" style="width:'+w+'%;background:'+COLORS[i%COLORS.length]+'"></div></div><span class="brand-count">'+bArr[i].count+'</span></div>'}
+  document.getElementById('brandChart').innerHTML=bChart;
+
+  var sArr=[];for(var k in series)sArr.push({name:k,count:series[k]});sArr.sort(function(a,b){return b.count-a.count});
+  var maxSC=sArr[0]?sArr[0].count:1,sChart='';
+  for(var i=0;i<Math.min(sArr.length,8);i++){var h=Math.round(sArr[i].count/maxSC*barMaxH);sChart+='<div class="bar-col"><div class="bar-val">'+sArr[i].count+'</div><div class="bar-fill" style="height:'+h+'px;background:'+COLORS[(i+3)%COLORS.length]+'"></div><div class="bar-name">'+(sArr[i].name||'未填')+'</div></div>'}
+  document.getElementById('seriesChart').innerHTML=sChart||'<div class="empty">暂无系列数据</div>';
+
+  // === 预测对比 ===
+  var preds=[];try{preds=JSON.parse(localStorage.getItem('zzPredictions')||'[]')}catch(e){}
+  var NM={'c罗':'cristiano ronaldo','梅西':'lionel messi','通卡拉':'ebrima tunkara','恩古莫哈':'rio ngumoha','库巴西':'pau cubarsi','劳塔罗':'lautaro martinez','哈兰德':'erling haaland','迪马利亚':'angel di maria'};
+  function nm(a,b){a=a.toLowerCase();b=b.toLowerCase();if(a===b)return true;if(a.indexOf(b)!==-1||b.indexOf(a)!==-1)return true;var mA=NM[a]||'',mB=NM[b]||'';if(mA&&(mA===b||mA.indexOf(b)!==-1||b.indexOf(mA)!==-1))return true;if(mB&&(mB===a||mB.indexOf(a)!==-1||a.indexOf(mB)!==-1))return true;if(mA&&mB&&mA===mB)return true;return false}
+  var pcHtml='',matched=0;
+  for(var i=0;i<data.length;i++){
+    var c=data[i];if(!c.priceHistory||c.priceHistory.length===0)continue;
+    var pred=null;for(var p=0;p<preds.length;p++){if(nm(preds[p].name,c.player)){pred=preds[p];break}}
+    if(!pred)continue;matched++;
+    var lastP=c.priceHistory[c.priceHistory.length-1];
+    // 用短期(6月)预测对比当前实际价格——时间最接近
+    var pv=pred.predST||pred.predMT||0;
+    var av=parseFloat((lastP.price||'').replace(/[^0-9.]/g,''))||0;
+    if(av<=0||pv<=0)continue;
+    var gap=((av-pv)/pv*100).toFixed(1),maxV=Math.max(av,pv);
+    pcHtml+='<div class="brand-row" style="margin-bottom:10px;"><span style="font-weight:700;min-width:60px;font-size:11px;">'+esc(c.player)+'</span><span style="font-size:10px;color:#888;min-width:70px;">'+c.year+' '+c.set+'</span><div style="flex:1;height:10px;background:#f5f5f5;border-radius:3px;position:relative;"><div style="position:absolute;left:0;top:0;height:100%;width:'+Math.round(av/maxV*100)+'%;background:#4ade80;border-radius:3px;"></div><div style="position:absolute;left:'+Math.round(pv/maxV*100)+'%;top:-2px;height:14px;width:2px;background:#e2b04a;"></div></div><span style="font-size:10px;min-width:50px;text-align:right;color:'+(gap>0?'#16a34a':gap<0?'#dc2626':'#888')+';">'+(gap>0?'+':'')+gap+'%</span><span style="font-size:10px;min-width:28px;text-align:right;color:'+(gap>5?'#16a34a':gap<-5?'#dc2626':'#888')+';">'+(gap>5?'跑赢':gap<-5?'跑输':'接近')+'</span></div>'
+  }
+  if(matched===0)pcHtml='<div style="color:#aaa;text-align:center;padding:15px;font-size:11px;">预测'+preds.length+'条 | 数据库有价'+data.filter(function(c){return(c.priceHistory||[]).length>0}).length+'张 | 未匹配</div>';
+  document.getElementById('predCompare').innerHTML=pcHtml;
+
+  var recs=data.slice(0,8),rHtml='';if(recs.length===0)rHtml='<div class="empty">暂无</div>';
+  for(var i=0;i<recs.length;i++){var c=recs[i];rHtml+='<li><span>'+c.player+'</span> '+c.year+' '+c.brand+' '+c.set+' '+(c.number||'')+' <span>'+(c.cost||'未填')+'</span></li>'}
+  document.getElementById('recents').innerHTML=rHtml
+}
+render();
+</script>
+</body>
+</html>

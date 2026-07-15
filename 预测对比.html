@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><title>预测对比</title>
+<style>
+body{font-family:"Microsoft YaHei",sans-serif;background:#f5f5f5;color:#333;padding:20px;max-width:600px;margin:0 auto}
+h1{font-size:18px;margin-bottom:16px}
+.card{background:#fff;border-radius:10px;padding:16px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.card strong{color:#1a1a2e}
+.bar-wrap{height:20px;background:#fef2f2;border-radius:3px;position:relative;margin:6px 0}
+.bar-actual{height:100%;background:#4ade80;border-radius:3px;position:absolute;left:0;top:0}
+.bar-pred{height:100%;width:2px;background:#e2b04a;border-left:2px dashed #e2b04a;position:absolute;top:0}
+.gap-plus{color:#16a34a;font-weight:700}.gap-minus{color:#dc2626;font-weight:700}
+</style></head>
+<body>
+<h1>🎯 预测 vs 实际</h1>
+<div id="root"></div>
+<script>
+var NAME_MAP={'c罗':'cristiano ronaldo','梅西':'lionel messi','通卡拉':'ebrima tunkara','恩古莫哈':'rio ngumoha','库巴西':'pau cubarsi','劳塔罗':'lautaro martinez','哈兰德':'erling haaland','迪马利亚':'angel di maria'};
+function nameMatch(a,b){
+  a=a.toLowerCase();b=b.toLowerCase();
+  if(a===b)return true;
+  if(a.indexOf(b)!==-1||b.indexOf(a)!==-1)return true;
+  var mA=NAME_MAP[a]||'',mB=NAME_MAP[b]||'';
+  if(mA&&(mA===b||mA.indexOf(b)!==-1||b.indexOf(mA)!==-1))return true;
+  if(mB&&(mB===a||mB.indexOf(a)!==-1||a.indexOf(mB)!==-1))return true;
+  if(mA&&mB&&mA===mB)return true;
+  return false
+}
+
+var db=JSON.parse(localStorage.getItem('zzCardDB_v2')||'[]');
+var preds=JSON.parse(localStorage.getItem('zzPredictions')||'[]');
+var html='',matched=0;
+
+for(var d=0;d<db.length;d++){
+  var c=db[d];
+  if(!c.priceHistory||c.priceHistory.length===0)continue;
+  var pred=null;
+  for(var p=0;p<preds.length;p++){if(nameMatch(preds[p].name,c.player)){pred=preds[p];break}}
+  if(!pred)continue;
+  matched++;
+  var lastP=c.priceHistory[c.priceHistory.length-1];
+  var actual=parseFloat((lastP.price||'').replace(/[^0-9.]/g,''))||0;
+  // 短期(6月)预测最接近当前——用于对比
+  var predV=pred.predST||pred.predMT||0;
+  if(actual<=0||predV<=0)continue;
+  var gap=((actual-predV)/predV*100).toFixed(1);
+  var maxV=Math.max(actual,predV);
+
+  html+='<div class="card"><strong>'+c.player+'</strong> '+c.year+' '+c.set+' '+c.number;
+  html+='<div class="bar-wrap"><div class="bar-actual" style="width:'+Math.round(actual/maxV*100)+'%"></div><div class="bar-pred" style="left:'+Math.round(predV/maxV*100)+'%"></div></div>';
+  html+='实际 '+lastP.price+' | 预测 '+predV+'元 | <span class="'+(gap>0?'gap-plus':'gap-minus')+'">'+(gap>0?'+':'')+gap+'%</span>';
+  html+='</div>'
+}
+
+if(matched===0)html='<p>未匹配。预测:'+preds.length+'条 | 数据库有价格:'+db.filter(function(c){return(c.priceHistory||[]).length>0}).length+'张</p>';
+document.getElementById('root').innerHTML=html;
+</script>
+</body>
+</html>

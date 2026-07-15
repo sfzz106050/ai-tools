@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>记账本 · ZZ</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Microsoft YaHei",sans-serif;background:#f5f5f5;color:#333}
+.header{background:#fff;padding:16px;text-align:center;border-bottom:1px solid #e5e5e5;position:sticky;top:0;z-index:10}
+.header h1{font-size:18px}
+.container{max-width:500px;margin:0 auto;padding:14px}
+
+/* 余额卡 */
+.balance-card{background:linear-gradient(135deg,#1a1a2e,#2d2d44);color:#fff;border-radius:14px;padding:20px 22px;margin-bottom:14px;text-align:center}
+.balance-label{font-size:11px;color:#aab;margin-bottom:4px}
+.balance-num{font-size:32px;font-weight:800;letter-spacing:1px}
+.balance-row{display:flex;gap:16px;margin-top:12px;justify-content:center}
+.bal-item{text-align:center}
+.bal-val{font-size:16px;font-weight:700}
+.bal-label{font-size:10px;color:#aab;margin-top:2px}
+.income-color{color:#4ade80}.expense-color{color:#f87171}
+
+/* 添加 */
+.add-card{background:#fff;border-radius:12px;padding:14px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
+.add-row{display:flex;gap:8px;margin-bottom:8px}
+.add-row input,.add-row select{padding:8px 10px;border:1px solid #e5e5e5;border-radius:6px;font-size:13px;font-family:inherit;background:#fafafa}
+.add-row input:focus,.add-row select:focus{outline:none;border-color:#333}
+.add-row input{flex:1}
+.add-row select{width:80px}
+.add-row .amount-input{width:110px}
+.type-btn{flex:1;padding:10px;border:1px solid #e5e5e5;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;background:#fafafa;text-align:center;transition:all .15s;color:#888}
+.type-btn:hover{border-color:#aaa}
+.type-btn.sel-expense{border-color:#f87171;background:#fef2f2;color:#dc2626}
+.type-btn.sel-income{border-color:#4ade80;background:#f0fdf4;color:#16a34a}
+.submit-btn{width:100%;padding:11px;background:#1a1a2e;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer}
+.submit-btn:hover{background:#333}
+
+/* 分类统计条 */
+.cat-bars{margin-bottom:14px}
+.cat-bar{margin-bottom:6px}
+.cat-bar-label{display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px}
+.cat-bar-track{height:6px;background:#eee;border-radius:3px;overflow:hidden}
+.cat-bar-fill{height:100%;border-radius:3px;transition:width .3s}
+
+/* 记录 */
+.records-card{background:#fff;border-radius:12px;padding:14px;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
+.records-card h2{font-size:14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.records-card h2 span{font-size:11px;color:#aaa;font-weight:400}
+.rec-item{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #f8f8f8;font-size:12px}
+.rec-item:last-child{border-bottom:none}
+.rec-cat{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.rec-info{flex:1}
+.rec-title{font-weight:600}
+.rec-date{font-size:10px;color:#aaa}
+.rec-amount{font-weight:700;font-size:14px;flex-shrink:0}
+.rec-amount.out{color:#f87171}.rec-amount.in{color:#16a34a}
+.rec-del{color:#ddd;cursor:pointer;font-size:14px;padding:2px 6px}
+.rec-del:hover{color:#f87171}
+.empty-rec{text-align:center;padding:30px;color:#ddd;font-size:13px}
+
+footer{text-align:center;padding:16px;color:#ddd;font-size:10px}
+</style>
+</head>
+<body>
+
+<div class="header"><h1>💰 记账本</h1></div>
+<div class="container">
+
+  <!-- 余额 -->
+  <div class="balance-card">
+    <div class="balance-label">当前余额</div>
+    <div class="balance-num" id="balNum">0</div>
+    <div class="balance-row">
+      <div class="bal-item"><div class="bal-val income-color" id="totalIn">0</div><div class="bal-label">总收入</div></div>
+      <div class="bal-item"><div class="bal-val expense-color" id="totalOut">0</div><div class="bal-label">总支出</div></div>
+    </div>
+  </div>
+
+  <!-- 分类统计 -->
+  <div class="cat-bars" id="catBars"></div>
+
+  <!-- 添加 -->
+  <div class="add-card">
+    <div class="add-row">
+      <input type="text" id="desc" placeholder="描述（例：午饭 / 稿费）">
+      <input type="number" id="amount" placeholder="金额" class="amount-input" onkeydown="if(event.key==='Enter')add()">
+    </div>
+    <div class="add-row">
+      <select id="cat">
+        <option value="🍜 餐饮">🍜 餐饮</option><option value="🚗 交通">🚗 交通</option>
+        <option value="🛒 购物">🛒 购物</option><option value="🎮 娱乐">🎮 娱乐</option>
+        <option value="🏠 住房">🏠 住房</option><option value="💼 工作">💼 工作收入</option>
+        <option value="🃏 球星卡">🃏 球星卡</option><option value="📝 其他">📝 其他</option>
+      </select>
+      <input type="date" id="date">
+    </div>
+    <div class="add-row" style="margin-bottom:10px;">
+      <div class="type-btn sel-expense" id="btnOut" onclick="setType('out')">支出</div>
+      <div class="type-btn" id="btnIn" onclick="setType('in')">收入</div>
+    </div>
+    <button class="submit-btn" onclick="add()">记一笔</button>
+  </div>
+
+  <!-- 记录 -->
+  <div class="records-card">
+    <h2>📋 最近记录 <span onclick="clearAll()" style="cursor:pointer;color:#f87171;">清空</span></h2>
+    <div id="records"></div>
+  </div>
+
+</div>
+<footer>记账本 · ZZ · 数据存于浏览器 (LocalStorage)</footer>
+
+<script>
+var currentType='out';
+var COLORS={'🍜 餐饮':'#f87171','🚗 交通':'#f59e0b','🛒 购物':'#ec4899','🎮 娱乐':'#8b5cf6','🏠 住房':'#78716c','💼 工作':'#4ade80','🃏 球星卡':'#e2b04a','📝 其他':'#94a3b8'};
+
+function setType(t){currentType=t;
+  document.getElementById('btnOut').className='type-btn'+(t==='out'?' sel-expense':'');
+  document.getElementById('btnIn').className='type-btn'+(t==='in'?' sel-income':'')
+}
+document.getElementById('date').value=new Date().toISOString().split('T')[0];
+
+// === LocalStorage 读写 ===
+function load(){try{return JSON.parse(localStorage.getItem('zzLedger')||'[]')}catch(e){return[]}}
+function save(d){localStorage.setItem('zzLedger',JSON.stringify(d))}
+
+function add(){
+  var desc=document.getElementById('desc').value.trim();if(!desc)return;
+  var amt=parseFloat(document.getElementById('amount').value);if(!amt||amt<=0)return;
+  var cat=document.getElementById('cat').value;
+  var date=document.getElementById('date').value;
+  var data=load();
+  data.unshift({desc:desc,amount:amt,cat:cat,type:currentType,date:date,time:Date.now()});
+  save(data);
+  document.getElementById('desc').value='';document.getElementById('amount').value='';
+  render()
+}
+
+function del(idx){var data=load();data.splice(idx,1);save(data);render()}
+function clearAll(){if(confirm('确定清空所有记录？')){save([]);render()}}
+
+function render(){
+  var data=load();
+  var totalIn=0,totalOut=0,catOut={},catTotal={};
+
+  for(var i=0;i<data.length;i++){
+    var r=data[i];
+    if(r.type==='in')totalIn+=r.amount;
+    else{totalOut+=r.amount;catOut[r.cat]=(catOut[r.cat]||0)+r.amount}
+  }
+
+  // 余额
+  var bal=totalIn-totalOut;
+  document.getElementById('balNum').textContent=bal.toFixed(0);
+  document.getElementById('totalIn').textContent='+'+totalIn.toFixed(0);
+  document.getElementById('totalOut').textContent='-'+totalOut.toFixed(0);
+
+  // 分类条
+  var barsHtml='';
+  for(var cat in catOut){
+    var pct=totalOut>0?Math.round(catOut[cat]/totalOut*100):0;
+    barsHtml+='<div class="cat-bar"><div class="cat-bar-label"><span>'+cat+'</span><span>'+catOut[cat].toFixed(0)+' ('+pct+'%)</span></div><div class="cat-bar-track"><div class="cat-bar-fill" style="width:'+pct+'%;background:'+(COLORS[cat]||'#999')+'"></div></div></div>'
+  }
+  document.getElementById('catBars').innerHTML=barsHtml||'<div style="text-align:center;color:#ddd;font-size:12px;padding:10px;">暂无支出记录</div>';
+
+  // 记录列表
+  var recHtml='';
+  if(data.length===0){recHtml='<div class="empty-rec">还没有记录，记一笔吧</div>'}
+  for(var i=0;i<Math.min(data.length,30);i++){
+    var r=data[i],isIn=r.type==='in';
+    recHtml+='<div class="rec-item"><div class="rec-cat" style="background:'+(COLORS[r.cat]||'#eee')+'22">'+(r.cat.slice(0,2))+'</div><div class="rec-info"><div class="rec-title">'+esc(r.desc)+'</div><div class="rec-date">'+r.date+' · '+r.cat+'</div></div><div class="rec-amount '+(isIn?'in':'out')+'">'+(isIn?'+':'-')+r.amount.toFixed(0)+'</div><span class="rec-del" onclick="del('+i+')">✕</span></div>'
+  }
+  document.getElementById('records').innerHTML=recHtml
+}
+
+function esc(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML}
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI数据整理工具 · ZZ</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Microsoft YaHei",sans-serif;background:#f5f5f5;color:#333}
+.header{background:#fff;padding:16px;text-align:center;border-bottom:2px solid #4ade80;position:sticky;top:0;z-index:10}
+.header h1{font-size:18px}.header p{font-size:11px;color:#999}
+.container{max-width:700px;margin:0 auto;padding:14px}
+
+.card{background:#fff;border-radius:10px;padding:16px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
+
+/* 上传区 */
+.upload-zone{border:2px dashed #d1d5db;border-radius:10px;padding:30px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:14px}
+.upload-zone:hover{border-color:#4ade80;background:#f0fdf4}
+.upload-zone input{display:none}
+.upload-icon{font-size:36px;margin-bottom:8px}
+.upload-text{font-size:13px;color:#888}
+
+/* 工具栏 */
+.tool-row{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.tool-row button,.tool-row select{padding:7px 14px;border:1px solid #ddd;border-radius:6px;background:#fff;font-size:12px;cursor:pointer;transition:all .15s}
+.tool-row button:hover{border-color:#333;color:#333}
+.tool-row button.primary{background:#4ade80;color:#fff;border:none}
+.tool-row button.primary:hover{background:#16a34a}
+.tool-row button.danger{color:#f87171;border-color:#fecaca}
+.tool-row button.danger:hover{background:#fef2f2;border-color:#ef4444}
+
+/* 表格 */
+.table-wrap{overflow-x:auto;max-height:400px;overflow-y:auto;font-size:11px}
+.table-wrap table{border-collapse:collapse;width:100%}
+.table-wrap th{background:#f0fdf4;color:#166534;padding:6px 8px;text-align:left;position:sticky;top:0;white-space:nowrap}
+.table-wrap td{padding:5px 8px;border-bottom:1px solid #f5f5f5;white-space:nowrap}
+.table-wrap tr:hover td{background:#fafafa}
+
+.info-bar{display:flex;justify-content:space-between;font-size:11px;color:#999;margin:8px 0}
+footer{text-align:center;padding:16px;color:#ddd;font-size:10px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📊 AI 数据整理工具</h1>
+  <p>上传 CSV → 去重/排序/筛选 → 导出干净数据</p>
+</div>
+
+<div class="container">
+
+  <!-- 上传 -->
+  <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+    <input type="file" id="fileInput" accept=".csv,.txt" onchange="loadFile(event)">
+    <div class="upload-icon">📂</div>
+    <div class="upload-text">点击上传 CSV 或 TXT 文件<br><span style="font-size:10px;">也支持从 Excel 导出 CSV 后上传</span></div>
+  </div>
+
+  <!-- 工具栏 -->
+  <div class="card" id="toolCard" style="display:none">
+    <div class="tool-row">
+      <button onclick="dedupe()">🔄 去重</button>
+      <button onclick="sortByCol()">⬇ 按列排序</button>
+      <button onclick="filterByCol()">🔍 筛选</button>
+      <button onclick="trimAll()">🧹 去空格</button>
+      <button onclick="fillEmpty()">📝 填空白</button>
+      <button class="danger" onclick="clearData()">🗑 清空</button>
+    </div>
+    <div class="tool-row">
+      <button class="primary" onclick="exportCSV()">📥 导出 CSV</button>
+      <button onclick="showStats()">📊 快速统计</button>
+      <button onclick="undo()">↩ 撤销</button>
+    </div>
+  </div>
+
+  <!-- 统计 -->
+  <div class="card" id="statsCard" style="display:none"></div>
+
+  <!-- 表格 -->
+  <div class="card" id="tableCard" style="display:none">
+    <div class="info-bar"><span id="rowCount"></span><span id="colCount"></span></div>
+    <div class="table-wrap" id="tableWrap"></div>
+  </div>
+
+</div>
+<footer>AI数据整理工具 · ZZ · 接单就用它</footer>
+
+<script>
+var data=[],headers=[],history=[]; // history用于撤销
+
+function loadFile(e){
+  var f=e.target.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(ev){
+    var text=ev.target.result;
+    // 自动检测分隔符
+    var sep=text.indexOf('\t')!==-1?'\t':',';
+    var lines=text.split('\n').filter(function(l){return l.trim()});
+    if(lines.length<2){alert('文件行数不足');return}
+    headers=parseLine(lines[0],sep);
+    data=[];
+    for(var i=1;i<lines.length;i++)data.push(parseLine(lines[i],sep));
+    saveHistory();showToolbar();render()
+  };
+  r.readAsText(f)
+}
+
+function parseLine(line,sep){
+  var result=[],current='',inQuote=false;
+  for(var i=0;i<line.length;i++){
+    var ch=line[i];
+    if(ch==='"')inQuote=!inQuote;
+    else if(ch===sep&&!inQuote){result.push(current.trim());current=''}
+    else current+=ch
+  }
+  result.push(current.trim());return result
+}
+
+function showToolbar(){document.getElementById('toolCard').style.display='block';document.getElementById('tableCard').style.display='block'}
+function saveHistory(){history.push(JSON.parse(JSON.stringify(data)))}
+
+function render(){
+  document.getElementById('rowCount').textContent=data.length+' 行';
+  document.getElementById('colCount').textContent=headers.length+' 列';
+  var h='<table><thead><tr>';
+  for(var i=0;i<headers.length;i++)h+='<th>'+esc(headers[i])+'</th>';
+  h+='</tr></thead><tbody>';
+  for(var r=0;r<Math.min(data.length,500);r++){
+    h+='<tr>';
+    for(var c=0;c<headers.length;c++)h+='<td>'+esc(data[r][c]||'')+'</td>';
+    h+='</tr>'
+  }
+  h+='</tbody></table>';
+  if(data.length>500)h+='<p style="padding:10px;color:#999;font-size:12px;">仅显示前500行</p>';
+  document.getElementById('tableWrap').innerHTML=h
+}
+
+// === 操作函数 ===
+function dedupe(){
+  saveHistory();var seen={},newData=[];
+  for(var i=0;i<data.length;i++){var key=data[i].join('|||');if(!seen[key]){seen[key]=true;newData.push(data[i])}}
+  data=newData;render();alert('去重完成: '+data.length+' 行')
+}
+
+function sortByCol(){
+  var col=prompt('按第几列排序? (1-'+headers.length+'):');
+  if(!col)return;col=parseInt(col)-1;if(col<0||col>=headers.length)return;
+  var order=prompt('升序输入 asc, 降序输入 desc:','asc');
+  saveHistory();data.sort(function(a,b){var va=a[col]||'',vb=b[col]||'';va=isNaN(va)?va:parseFloat(va);vb=isNaN(vb)?vb:parseFloat(vb);if(va<vb)return order==='desc'?1:-1;if(va>vb)return order==='desc'?-1:1;return 0});render()
+}
+
+function filterByCol(){
+  var col=prompt('按第几列筛选? (1-'+headers.length+'):');
+  if(!col)return;col=parseInt(col)-1;if(col<0||col>=headers.length)return;
+  var keyword=prompt('筛选包含什么文字? (留空=不筛选):');
+  saveHistory();
+  if(keyword)data=data.filter(function(r){return(r[col]||'').toLowerCase().indexOf(keyword.toLowerCase())!==-1});
+  else{var numMin=prompt('数值最小值(留空=不限):'),numMax=prompt('数值最大值(留空=不限):');
+    data=data.filter(function(r){var v=parseFloat(r[col]);if(isNaN(v))return false;if(numMin&&v<parseFloat(numMin))return false;if(numMax&&v>parseFloat(numMax))return false;return true})}
+  render()
+}
+
+function trimAll(){saveHistory();for(var i=0;i<data.length;i++)for(var j=0;j<data[i].length;j++)if(typeof data[i][j]==='string')data[i][j]=data[i][j].trim();render()}
+function fillEmpty(){
+  var val=prompt('用啥填空白?','-');if(val===null)return;
+  saveHistory();for(var i=0;i<data.length;i++)for(var j=0;j<data[i].length;j++)if(!data[i][j])data[i][j]=val;render()
+}
+function clearData(){if(confirm('清空? 可以撤销。')){saveHistory();data=[];render()}}
+function undo(){if(history.length>0){data=history.pop();render();alert('已撤销')}else{alert('无历史')}}
+
+function showStats(){
+  var h='<h3 style="margin-bottom:10px;">📊 快速统计</h3>';
+  for(var c=0;c<headers.length;c++){
+    var vals=[],nums=[];for(var r=0;r<data.length;r++){vals.push(data[r][c]||'');var n=parseFloat(data[r][c]);if(!isNaN(n))nums.push(n)}
+    h+='<div style="margin-bottom:8px;"><strong>'+headers[c]+'</strong><br><span style="font-size:11px;">';
+    h+='总数:'+data.length+' | 非空:'+vals.filter(function(v){return v!==''}).length+' | 唯一值:'+new Set(vals.filter(function(v){return v!==''})).size;
+    if(nums.length>0){var sum=nums.reduce(function(a,b){return a+b},0);h+=' | 平均:'+(sum/nums.length).toFixed(1)+' | 最大:'+Math.max.apply(null,nums)+' | 最小:'+Math.min.apply(null,nums)}
+    h+='</span></div>'
+  }
+  document.getElementById('statsCard').style.display='block';document.getElementById('statsCard').innerHTML=h
+}
+
+function exportCSV(){
+  if(data.length===0){alert('无数据');return}
+  var csv=headers.map(function(h){return '"'+h.replace(/"/g,'""')+'"'}).join(',')+'\n';
+  for(var i=0;i<data.length;i++)csv+=data[i].map(function(v){return '"'+(v||'').replace(/"/g,'""')+'"'}).join(',')+'\n';
+  var b=new Blob([csv],{type:'text/csv'});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download='整理后的数据.csv';a.click();URL.revokeObjectURL(u)
+}
+
+function esc(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML}
+</script>
+</body>
+</html>

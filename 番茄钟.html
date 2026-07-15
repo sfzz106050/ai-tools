@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>番茄钟 · ZZ</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Microsoft YaHei",sans-serif;background:linear-gradient(180deg,#fef7ed 0%,#fef2f2 100%);color:#333;display:flex;justify-content:center;align-items:center;min-height:100vh;padding:20px}
+.card{background:#fff;border-radius:24px;padding:36px 28px 24px;max-width:400px;width:100%;box-shadow:0 2px 20px rgba(180,60,40,0.08);text-align:center}
+
+/* 顶部装饰番茄 */
+.deco-tomatoes{font-size:28px;margin-bottom:4px;letter-spacing:6px;animation:wiggle 3s ease-in-out infinite}
+@keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(3deg)}75%{transform:rotate(-3deg)}}
+
+/* 状态标签 */
+.phase-tag{display:inline-block;padding:4px 16px;border-radius:14px;font-size:12px;font-weight:700;margin-bottom:20px}
+.phase-work{background:#fef2f2;color:#dc2626}
+.phase-break{background:#f0fdf4;color:#16a34a}
+
+/* 番茄主体 - CSS绘制 */
+.tomato-wrap{position:relative;width:200px;height:210px;margin:0 auto 12px}
+.tomato-body{
+  width:180px;height:180px;border-radius:50%;margin:20px auto 0;
+  background:radial-gradient(circle at 35% 30%,#ff6b6b 0%,#e63946 60%,#c1121f 100%);
+  box-shadow:
+    inset 0 -8px 20px rgba(0,0,0,0.15),
+    inset 0 8px 20px rgba(255,255,255,0.15),
+    0 8px 24px rgba(180,40,20,0.25);
+  position:relative;
+  display:flex;align-items:center;justify-content:center;
+}
+/* 番茄高光 */
+.tomato-body::before{
+  content:'';position:absolute;top:22px;left:36px;
+  width:36px;height:24px;border-radius:50%;
+  background:rgba(255,255,255,0.25);transform:rotate(-20deg);
+}
+/* 番茄叶子: 5片 */
+.leaves{position:absolute;top:2px;left:50%;transform:translateX(-50%);z-index:2}
+.leaf{
+  position:absolute;width:22px;height:32px;border-radius:50% 50% 0 50%;
+  background:linear-gradient(180deg,#4ade80,#16a34a);
+  transform-origin:bottom center;
+}
+.leaf:nth-child(1){transform:rotate(-50deg) translateY(6px)}
+.leaf:nth-child(2){transform:rotate(-20deg) translateY(4px)}
+.leaf:nth-child(3){transform:rotate(10deg) translateY(4px)}
+.leaf:nth-child(4){transform:rotate(40deg) translateY(5px)}
+.leaf:nth-child(5){transform:rotate(70deg) translateY(7px)}
+/* 茎 */
+.stem{
+  position:absolute;top:-4px;left:50%;transform:translateX(-50%);
+  width:5px;height:18px;border-radius:3px;background:linear-gradient(180deg,#166534,#15803d);
+  z-index:3;
+}
+
+/* 番茄上的计时数字 */
+.tomato-time{
+  font-size:46px;font-weight:900;color:#fff;z-index:1;
+  text-shadow:0 2px 8px rgba(0,0,0,0.2);letter-spacing:3px;
+  position:relative;z-index:2;
+}
+.timer-label{font-size:12px;color:#b91c1c;margin-bottom:20px;font-weight:600}
+
+/* 按钮 */
+.btns{display:flex;gap:8px;justify-content:center;margin-bottom:24px}
+.btn{padding:10px 24px;border-radius:22px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .15s}
+.btn-start{background:linear-gradient(135deg,#e63946,#c1121f);color:#fff;box-shadow:0 4px 12px rgba(180,40,20,0.3)}
+.btn-start:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(180,40,20,0.4)}
+.btn-pause{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}
+.btn-pause:hover{background:#fee2e2}
+.btn-reset{background:#f5f5f5;color:#888}
+.btn-reset:hover{background:#e5e5e5}
+
+/* 预设 */
+.presets{display:flex;gap:8px;margin-bottom:20px;justify-content:center;flex-wrap:wrap}
+.preset{padding:8px 14px;border-radius:16px;border:1px solid #fecaca;background:#fff;font-size:12px;cursor:pointer;transition:all .15s;color:#b91c1c}
+.preset:hover{border-color:#e63946;background:#fef2f2}
+.preset.active{border-color:#e63946;background:#e63946;color:#fff;font-weight:600}
+
+/* 统计 */
+.stats-row{display:flex;gap:0;border-top:1px solid #fef2f2;padding-top:16px}
+.stat-col{flex:1;text-align:center}
+.stat-num{font-size:20px;font-weight:700;color:#b91c1c}
+.stat-label{font-size:10px;color:#aaa;margin-top:2px}
+
+/* 历史 */
+.history{margin-top:14px;text-align:left;max-height:100px;overflow-y:auto}
+.history h3{font-size:12px;color:#aaa;margin-bottom:6px}
+.hist-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px}
+.hist-dot.work{background:#e63946}.hist-dot.break{background:#4ade80}
+.hist-item{font-size:11px;color:#888;padding:2px 0}
+
+footer{text-align:center;padding:16px;color:#f5c6c6;font-size:10px}
+</style>
+</head>
+<body>
+<div style="width:100%;max-width:400px">
+
+<div class="card">
+  <!-- 装饰番茄 -->
+  <div class="deco-tomatoes">🍅🍅🍅</div>
+
+  <div class="phase-tag phase-work" id="phaseTag">🍅 专注中</div>
+
+  <!-- CSS番茄 -->
+  <div class="tomato-wrap">
+    <div class="leaves">
+      <div class="leaf"></div><div class="leaf"></div><div class="leaf"></div>
+      <div class="leaf"></div><div class="leaf"></div>
+    </div>
+    <div class="stem"></div>
+    <div class="tomato-body" id="tomatoBody">
+      <span class="tomato-time" id="timerDisplay">25:00</span>
+    </div>
+  </div>
+
+  <div class="timer-label" id="timerLabel">25 分钟专注</div>
+
+  <div class="presets">
+    <span class="preset active" onclick="setPreset(25,this)">🍅 25分</span>
+    <span class="preset" onclick="setPreset(45,this)">🍅 45分</span>
+    <span class="preset" onclick="setPreset(5,this)">☕ 5分</span>
+    <span class="preset" onclick="setPreset(15,this)">☕ 15分</span>
+  </div>
+
+  <div class="btns">
+    <button class="btn btn-start" id="btnStart" onclick="start()">▶ 开始</button>
+    <button class="btn btn-pause" id="btnPause" onclick="pause()" style="display:none">⏸ 暂停</button>
+    <button class="btn btn-reset" onclick="reset()">↺ 重置</button>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-col"><div class="stat-num" id="todaySessions">0</div><div class="stat-label">今日🍅</div></div>
+    <div class="stat-col"><div class="stat-num" id="todayMinutes">0</div><div class="stat-label">专注分钟</div></div>
+    <div class="stat-col"><div class="stat-num" id="totalSessions">0</div><div class="stat-label">历史总🍅</div></div>
+  </div>
+
+  <div class="history" id="history"></div>
+</div>
+
+</div>
+<footer>番茄钟 · ZZ · CSS番茄 + 定时器</footer>
+
+<script>
+var totalSeconds=25*60,remaining=totalSeconds,running=false,isWork=true,timerId=null,selectedMinutes=25;
+var todayRecords=[];
+
+function loadRecords(){
+  try{var saved=JSON.parse(localStorage.getItem('zzPomodoro')||'{}');var today=new Date().toISOString().split('T')[0];return saved[today]||[]}catch(e){return[]}
+}
+function saveRecords(){
+  var saved={};try{saved=JSON.parse(localStorage.getItem('zzPomodoro')||'{}')}catch(e){}
+  var today=new Date().toISOString().split('T')[0];saved[today]=todayRecords;localStorage.setItem('zzPomodoro',JSON.stringify(saved))
+}
+
+function start(){
+  if(running)return;running=true;timerId=setInterval(tick,1000);
+  document.getElementById('btnStart').style.display='none';document.getElementById('btnPause').style.display='inline-block'
+}
+function pause(){running=false;clearInterval(timerId);document.getElementById('btnStart').style.display='inline-block';document.getElementById('btnPause').style.display='none'}
+function tick(){remaining--;updateDisplay();if(remaining<=0)done()}
+function reset(){pause();remaining=totalSeconds;updateDisplay()}
+
+// 提示音: Web Audio API 合成，无需音频文件
+function chime(){
+  try{
+    var ctx=new (window.AudioContext||window.webkitAudioContext)();
+    var notes=[523,659,784,1047]; // C5 E5 G5 C6 叮叮叮叮~
+    notes.forEach(function(freq,i){
+      var osc=ctx.createOscillator(),gain=ctx.createGain();
+      osc.connect(gain);gain.connect(ctx.destination);
+      osc.type='sine';osc.frequency.value=freq;
+      gain.gain.setValueAtTime(0.15,ctx.currentTime+i*0.15);
+      gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+i*0.15+0.3);
+      osc.start(ctx.currentTime+i*0.15);osc.stop(ctx.currentTime+i*0.15+0.3)
+    })
+  }catch(e){}
+}
+
+function done(){
+  chime();
+  pause();var now=new Date(),timeStr=now.getHours()+':'+String(now.getMinutes()).padStart(2,'0');
+  todayRecords.push({type:isWork?'work':'break',minutes:selectedMinutes,time:timeStr});saveRecords();
+
+  if(isWork){isWork=false;document.getElementById('phaseTag').textContent='☕ 休息中';document.getElementById('phaseTag').className='phase-tag phase-break';document.getElementById('timerLabel').textContent='5 分钟休息';totalSeconds=5*60;selectedMinutes=5}
+  else{isWork=true;document.getElementById('phaseTag').textContent='🍅 专注中';document.getElementById('phaseTag').className='phase-tag phase-work';document.getElementById('timerLabel').textContent='25 分钟专注';totalSeconds=25*60;selectedMinutes=25}
+  remaining=totalSeconds;updateDisplay();renderStats()
+}
+
+function setPreset(min,el){
+  pause();selectedMinutes=min;totalSeconds=min*60;remaining=totalSeconds;
+  document.querySelectorAll('.preset').forEach(function(p){p.classList.remove('active')});el.classList.add('active');
+  if(min<=15){isWork=false;document.getElementById('phaseTag').textContent='☕ 休息中';document.getElementById('phaseTag').className='phase-tag phase-break';document.getElementById('timerLabel').textContent=min+' 分钟休息'}
+  else{isWork=true;document.getElementById('phaseTag').textContent='🍅 专注中';document.getElementById('phaseTag').className='phase-tag phase-work';document.getElementById('timerLabel').textContent=min+' 分钟专注'}
+  updateDisplay()
+}
+
+function updateDisplay(){var m=Math.floor(remaining/60),s=remaining%60;document.getElementById('timerDisplay').textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')}
+
+function renderStats(){
+  todayRecords=loadRecords();var workSessions=0,workMin=0;
+  for(var i=0;i<todayRecords.length;i++){var r=todayRecords[i];if(r.type==='work'){workSessions++;workMin+=r.minutes}}
+  document.getElementById('todaySessions').textContent=workSessions;document.getElementById('todayMinutes').textContent=workMin;
+  var total=0;try{var all=JSON.parse(localStorage.getItem('zzPomodoro')||'{}');for(var k in all){var arr=all[k];for(var j=0;j<arr.length;j++){if(arr[j].type==='work')total++}}}catch(e){}
+  document.getElementById('totalSessions').textContent=total;
+  var histHtml='<h3>📋 今日记录</h3>';if(todayRecords.length===0)histHtml+='<span class="hist-item" style="color:#ddd;">暂无</span>';
+  for(var i=todayRecords.length-1;i>=0;i--){var r=todayRecords[i],cls=r.type==='work'?'work':'break',emoji=r.type==='work'?'🍅':'☕';histHtml+='<div class="hist-item"><span class="hist-dot '+cls+'"></span>'+emoji+' '+r.minutes+'分钟 @ '+r.time+'</div>'}
+  document.getElementById('history').innerHTML=histHtml
+}
+
+updateDisplay();renderStats();
+</script>
+</body>
+</html>

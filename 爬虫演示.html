@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>爬虫概念演示 · ZZ</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Microsoft YaHei",sans-serif;background:#f5f5f5;color:#333}
+.header{background:#1a1a2e;color:#e2b04a;text-align:center;padding:20px}
+.header h1{font-size:20px}.header p{font-size:12px;color:#888}
+.container{max-width:750px;margin:0 auto;padding:16px}
+
+.card{background:#fff;border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
+.card h2{font-size:15px;margin-bottom:10px;color:#1a1a2e}
+
+/* 模拟网页 */
+.mock-page{background:#fafafa;border:1px solid #e5e5e5;border-radius:8px;padding:14px;font-size:12px;line-height:2;max-height:300px;overflow-y:auto;margin-bottom:12px;font-family:monospace}
+.mock-page .item{border-bottom:1px solid #f0f0f0;padding:8px 0}
+.mock-page .name{color:#2563eb;font-weight:700}
+.mock-page .price{color:#dc2626;font-weight:700}
+.mock-page .number{color:#16a34a}
+
+.btn{display:inline-block;padding:10px 20px;background:#e2b04a;color:#1a1a2e;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;margin-right:8px;margin-bottom:8px}
+.btn:hover{background:#c8963e}
+
+.result{background:#1a1a2e;color:#4ade80;border-radius:8px;padding:14px;font-size:12px;line-height:1.8;white-space:pre-wrap;max-height:300px;overflow-y:auto;font-family:monospace}
+
+/* 对比区 */
+.compare{display:flex;gap:12px;margin-top:12px}
+.compare>div{flex:1}
+.compare h3{font-size:12px;color:#888;margin-bottom:6px;text-align:center}
+
+.explain-box{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:14px;font-size:12px;line-height:1.8;margin-top:12px;color:#92400e}
+.explain-box code{background:#fef3c7;padding:1px 5px;border-radius:3px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🕷️ 爬虫概念演示</h1>
+  <p>纯 JavaScript · 不用装 Python · 理解底层逻辑</p>
+</div>
+
+<div class="container">
+
+  <!-- 模拟页面 -->
+  <div class="card">
+    <h2>📄 模拟"卡淘商品列表页"</h2>
+    <p style="font-size:11px;color:#999;margin-bottom:8px;">这就是爬虫看到的——一堆 HTML 代码</p>
+    <div class="mock-page" id="mockPage"></div>
+  </div>
+
+  <!-- 按钮 -->
+  <button class="btn" onclick="scrapeDemo()">🕷️ 运行爬虫</button>
+  <button class="btn" onclick="showCode()" style="background:#666;color:#fff">👀 看爬虫代码</button>
+
+  <!-- 结果 -->
+  <div class="compare">
+    <div>
+      <h3>📄 原始 HTML（浏览器看到的）</h3>
+      <div class="mock-page" id="rawView" style="font-size:10px;"></div>
+    </div>
+    <div>
+      <h3>📊 爬虫提取的数据（结构化）</h3>
+      <div class="result" id="scrapedResult">点击"运行爬虫"查看结果...</div>
+    </div>
+  </div>
+
+  <!-- 解释 -->
+  <div class="explain-box" id="explainBox" style="display:none">
+    <strong>🔍 爬虫到底做了什么？</strong><br><br>
+    1. <code>fetch(网页地址)</code> → 拿到完整 HTML（就像你右键→查看网页源代码）<br>
+    2. <code>document.querySelectorAll('.item')</code> → 找到所有商品卡片<br>
+    3. <code>card.querySelector('.name')</code> → 从每个卡片里提取名字<br>
+    4. <code>card.querySelector('.price')</code> → 从每个卡片里提取价格<br>
+    5. 组装成干净的 JSON 数组 → 存进数据库<br><br>
+    <strong>核心逻辑：</strong>爬虫不是魔法，就是"找到规律 → 按规律提取 → 结构化存储"。<br>
+    真正爬卡淘时，步骤完全一样——只是网页结构更复杂、需要处理翻页和反爬。<br><br>
+    <strong>你现在能用这个做什么：</strong><br>
+    - ❌ 不能爬卡淘（需要后端/服务器环境，绕过 CORS）<br>
+    - ✅ 理解了底层逻辑 → 以后有 Node.js/Python 环境时，换个语言照样用<br>
+    - ✅ 手动复制 HTML → 粘贴到工具里 → 自动提取（不用一行行看）
+  </div>
+
+</div>
+
+<script>
+// === 模拟一张卡淘商品列表页 ===
+var mockCards=[
+  {name:'埃布里马·通卡拉', brand:'Topps', set:'Bowman 1st', number:'/150', price:'¥800', link:'/item/001'},
+  {name:'埃布里马·通卡拉', brand:'Topps', set:'UCC Chrome', number:'/75', price:'¥1,500', link:'/item/002'},
+  {name:'Lamine Yamal', brand:'Topps', set:'Chrome RC', number:'/50', price:'¥12,000', link:'/item/003'},
+  {name:'Rio Ngumoha', brand:'Topps', set:'Chrome EPL RC', number:'/299', price:'¥600', link:'/item/004'},
+  {name:'Pau Cubarsi', brand:'Topps', set:'Chrome UCC', number:'/50', price:'¥3,200', link:'/item/005'},
+  {name:'Lionel Messi', brand:'Panini', set:'Donruss', number:'/299', price:'¥2,800', link:'/item/006'},
+  {name:'Cristiano Ronaldo', brand:'Topps', set:'Euro 2024', number:'/799', price:'¥1,200', link:'/item/007'},
+  {name:'Ebrima Tunkara', brand:'Topps', set:'Bowman 1st', number:'Base', price:'¥150', link:'/item/008'}
+];
+
+// 渲染模拟页面
+function renderMock(){
+  var h='<div style="padding:8px;color:#888;border-bottom:1px solid #eee;">卡淘搜索: "球星卡 新秀 巴萨" | 共 '+mockCards.length+' 条结果</div>';
+  for(var i=0;i<mockCards.length;i++){
+    var c=mockCards[i];
+    h+='<div class="item"><span class="name">'+c.name+'</span> | <span class="brand">'+c.brand+'</span> '+c.set+' | 编号: <span class="number">'+c.number+'</span> | 价格: <span class="price">'+c.price+'</span> | <a href="'+c.link+'">详情</a></div>'
+  }
+  document.getElementById('mockPage').innerHTML=h
+}
+
+// === 爬虫核心逻辑 ===
+function scrapeDemo(){
+  // 1. 获取页面（真实场景: fetch(url)）
+  var page=document.getElementById('mockPage');
+
+  // 2. 找到所有商品卡片（真实场景: 用选择器定位）
+  var items=page.querySelectorAll('.item');
+
+  // 3. 遍历提取（真实场景: 一样的逻辑）
+  var results=[];
+  for(var i=0;i<items.length;i++){
+    var item=items[i];
+    var card={
+      name: item.querySelector('.name')?item.querySelector('.name').textContent:'',
+      brand: item.querySelector('.brand')?item.querySelector('.brand').textContent:'',
+      number: item.querySelector('.number')?item.querySelector('.number').textContent:'',
+      price: item.querySelector('.price')?item.querySelector('.price').textContent:'',
+      link: item.querySelector('a')?item.querySelector('a').href:''
+    };
+    results.push(card)
+  }
+
+  // 4. 输出结构化数据
+  var output='// 爬虫提取完成! '+results.length+' 张卡\n';
+  output+='// 这就是你以后能自动填入数据库的 JSON\n\n';
+  output+=JSON.stringify(results,null,2);
+
+  document.getElementById('scrapedResult').textContent=output;
+  document.getElementById('explainBox').style.display='block';
+
+  // 同时展示原始 HTML
+  document.getElementById('rawView').textContent=page.innerHTML
+}
+
+// 展示爬虫代码
+function showCode(){
+  document.getElementById('scrapedResult').textContent=
+    '// ====== 爬虫核心代码 ======\n\n'+
+    '// 1. 获取目标网页的 HTML\n'+
+    'var response = await fetch("https://www.cardhobby.com/search?q=通卡拉");\n'+
+    'var html = await response.text();\n\n'+
+    '// 2. 把 HTML 解析成 DOM 树\n'+
+    'var parser = new DOMParser();\n'+
+    'var doc = parser.parseFromString(html, "text/html");\n\n'+
+    '// 3. 用 CSS 选择器找到目标元素\n'+
+    'var cards = doc.querySelectorAll(".product-item");\n\n'+
+    '// 4. 遍历提取每个字段\n'+
+    'var results = [];\n'+
+    'cards.forEach(function(card) {\n'+
+    '  results.push({\n'+
+    '    name:  card.querySelector(".product-name").textContent,\n'+
+    '    price: card.querySelector(".product-price").textContent,\n'+
+    '    link:  card.querySelector("a").href\n'+
+    '  });\n'+
+    '});\n\n'+
+    '// 5. 输出或存入数据库\n'+
+    'console.log(JSON.stringify(results, null, 2));\n\n'+
+    '// ====== 现实阻碍 ======\n'+
+    '// 1. 跨域(CORS): 浏览器里 fetch 其他网站会被拦截\n'+
+    '//    → 解决: 用 Node.js 或 Python 在后端跑\n'+
+    '// 2. 反爬: 网站会封高频访问的 IP\n'+
+    '//    → 解决: 加延迟、换 User-Agent\n'+
+    '// 3. 结构变化: 网站改版, 选择器会失效\n'+
+    '//    → 解决: 定期维护爬虫代码'
+}
+
+// 初始化
+renderMock();
+</script>
+</body>
+</html>

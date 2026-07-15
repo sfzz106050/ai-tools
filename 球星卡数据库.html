@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>球星卡数据库 · ZZ</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Microsoft YaHei",sans-serif;background:#f5f5f5;color:#333}
+.header{background:#fff;padding:16px;text-align:center;border-bottom:2px solid #e2b04a;position:sticky;top:0;z-index:10}
+.header h1{font-size:18px}.header p{font-size:11px;color:#999}
+.container{max-width:650px;margin:0 auto;padding:14px}
+
+/* Tab */
+.tabs{display:flex;gap:6px;margin-bottom:14px}
+.tab{flex:1;padding:10px;text-align:center;border-radius:10px;border:1px solid #e5e5e5;background:#fff;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;color:#888}
+.tab:hover{border-color:#e2b04a;color:#333}
+.tab.active{background:#e2b04a;color:#fff;border-color:#e2b04a}
+
+.add-card{background:#fff;border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
+.add-row{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.add-row input,.add-row select{flex:1;min-width:70px;padding:8px 10px;border:1px solid #e5e5e5;border-radius:6px;font-size:12px;font-family:inherit;background:#fafafa}
+.add-row input:focus,.add-row select:focus{outline:none;border-color:#e2b04a}
+.add-btn{width:100%;padding:10px;background:#e2b04a;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer}
+.add-btn:hover{background:#c8963e}
+
+/* 工具栏 */
+.toolbar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.toolbar button{padding:8px 14px;border:1px solid #ddd;border-radius:8px;background:#fff;font-size:12px;cursor:pointer;transition:all .15s;color:#666}
+.toolbar button:hover{border-color:#333;color:#333}
+.toolbar input{flex:1;min-width:120px;padding:8px 10px;border:1px solid #e5e5e5;border-radius:8px;font-size:12px;font-family:inherit;background:#fff}
+.toolbar input:focus{outline:none;border-color:#e2b04a}
+
+/* 卡片列表 */
+.card-item{background:#fff;border-radius:10px;padding:14px;margin-bottom:8px;box-shadow:0 1px 2px rgba(0,0,0,0.04);position:relative}
+.card-item.watching{border-left:3px solid #60a5fa}
+.card-item.owned{border-left:3px solid #e2b04a}
+.card-item-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+.card-player{font-size:14px;font-weight:700}
+.card-detail{font-size:11px;color:#888}
+.card-type-tag{font-size:10px;padding:2px 8px;border-radius:8px;font-weight:600;flex-shrink:0}
+.type-owned{background:#fef3c7;color:#92400e}
+.type-watching{background:#dbeafe;color:#1e40af}
+
+/* 价格历史 */
+.price-log{margin-top:8px;padding-top:8px;border-top:1px solid #f5f5f5}
+.price-log-header{font-size:10px;color:#aaa;margin-bottom:4px;display:flex;justify-content:space-between}
+.price-log-item{display:flex;gap:8px;font-size:11px;padding:2px 0;color:#888}
+.price-log-item .pl-date{color:#aaa;min-width:75px}
+.price-log-item .pl-price{font-weight:600;color:#333}
+.add-price-row{display:flex;gap:6px;margin-top:6px}
+.add-price-row input{flex:1;padding:5px 8px;border:1px solid #e5e5e5;border-radius:4px;font-size:11px;font-family:inherit}
+.add-price-row button{padding:5px 10px;background:#e2b04a;color:#fff;border:none;border-radius:4px;font-size:11px;cursor:pointer;white-space:nowrap}
+
+/* 操作 */
+.card-actions{display:flex;gap:6px;margin-top:8px}
+.card-actions button{padding:4px 10px;border:1px solid #e5e5e5;border-radius:4px;background:#fff;font-size:11px;cursor:pointer;color:#888}
+.card-actions button:hover{border-color:#333;color:#333}
+.card-actions .del-btn{color:#f87171;border-color:#fecaca}
+.card-actions .del-btn:hover{border-color:#ef4444;background:#fef2f2}
+
+.info-bar{display:flex;justify-content:space-between;margin-bottom:8px;font-size:11px;color:#999}
+.empty{text-align:center;padding:40px;color:#ddd;font-size:13px}
+footer{text-align:center;padding:16px;color:#ddd;font-size:10px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🃏 球星卡数据库</h1>
+  <p>自有卡 + 追踪卡 + 价格历史 → 为预测工具供数据</p>
+</div>
+
+<div class="container">
+
+  <!-- Tab -->
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('all')">📋 全部 (<span id="cntAll">0</span>)</div>
+    <div class="tab" onclick="switchTab('owned')">💼 自有 (<span id="cntOwned">0</span>)</div>
+    <div class="tab" onclick="switchTab('watching')">👀 追踪 (<span id="cntWatching">0</span>)</div>
+  </div>
+
+  <!-- 录入 -->
+  <div class="add-card">
+    <div class="add-row">
+      <input type="text" id="aPlayer" placeholder="球员 *" style="flex:2">
+      <input type="text" id="aYear" placeholder="年份 *" style="flex:1">
+      <input type="text" id="aBrand" placeholder="品牌 *" style="flex:1">
+    </div>
+    <div class="add-row">
+      <input type="text" id="aSet" placeholder="系列" style="flex:1">
+      <input type="text" id="aNumber" placeholder="编号(例: /150)" style="flex:1">
+      <select id="aType"><option value="owned">💼 自有</option><option value="watching" selected>👀 追踪</option></select>
+    </div>
+    <div class="add-row">
+      <input type="text" id="aPrice" placeholder="购入价 / 当前市场价" style="flex:1">
+      <input type="text" id="aDate" placeholder="日期" style="flex:1">
+      <input type="text" id="aNote" placeholder="备注" style="flex:1">
+    </div>
+    <button class="add-btn" onclick="addCard()">+ 录入卡片</button>
+  </div>
+
+  <!-- 工具 -->
+  <div class="toolbar">
+    <input type="text" id="searchBox" placeholder="🔍 搜索..." oninput="render()">
+    <button onclick="exportCSV()">📥 CSV</button>
+    <button onclick="exportJSON()">📥 JSON</button>
+    <button onclick="importJSON()">📤 导入</button>
+    <button onclick="clearAll()" style="color:#f87171;">🗑 清空</button>
+  </div>
+
+  <div class="info-bar"><span id="recordCount">共 0 条</span><span>每张卡可追加价格记录</span></div>
+
+  <div id="cardList"></div>
+
+</div>
+<footer>球星卡数据库 · ZZ · 自有卡 + 追踪卡 + 价格历史</footer>
+
+<script>
+// === 数据结构 ===
+// {player, year, brand, set, number, type:'owned'|'watching', cost, costDate, note, priceHistory:[{date, price}], time}
+function load(){try{return JSON.parse(localStorage.getItem('zzCardDB_v2')||'[]')}catch(e){return[]}}
+function save(d){localStorage.setItem('zzCardDB_v2',JSON.stringify(d))}
+
+var currentTab='all';
+
+function switchTab(t){currentTab=t;
+  document.querySelectorAll('.tab').forEach(function(tb){tb.classList.remove('active')});
+  document.querySelector('.tab[onclick="switchTab(\''+t+'\')"]').classList.add('active');
+  render()
+}
+
+function addCard(){
+  var player=document.getElementById('aPlayer').value.trim();
+  var year=document.getElementById('aYear').value.trim();
+  if(!player||!year){alert('球员和年份必填');return}
+  var price=document.getElementById('aPrice').value.trim();
+  var date=document.getElementById('aDate').value.trim();
+  var card={
+    player:player, year:year,
+    brand:document.getElementById('aBrand').value.trim(),
+    set:document.getElementById('aSet').value.trim(),
+    number:document.getElementById('aNumber').value.trim(),
+    type:document.getElementById('aType').value,
+    cost:price, costDate:date,
+    note:document.getElementById('aNote').value.trim(),
+    priceHistory:price?[{date:date||'录入日',price:price}]:[],
+    time:Date.now()
+  };
+  var data=load();data.unshift(card);save(data);
+  ['aPlayer','aYear','aBrand','aSet','aNumber','aPrice','aDate','aNote'].forEach(function(id){document.getElementById(id).value=''});
+  render()
+}
+
+function delCard(idx){if(!confirm('删除这张卡?'))return;var data=load();data.splice(idx,1);save(data);render()}
+
+function addPrice(idx){
+  var row=document.getElementById('priceRow_'+idx);
+  var price=row.querySelector('input').value.trim();
+  if(!price)return;
+  var now=new Date().toISOString().split('T')[0];
+  var data=load();
+  if(!data[idx].priceHistory)data[idx].priceHistory=[];
+  data[idx].priceHistory.push({date:now,price:price});
+  save(data);render()
+}
+
+function render(){
+  var data=load(),search=document.getElementById('searchBox').value.toLowerCase();
+  // 筛选
+  var filtered=[];
+  for(var i=0;i<data.length;i++){
+    var c=data[i];
+    if(currentTab==='owned'&&c.type!=='owned')continue;
+    if(currentTab==='watching'&&c.type!=='watching')continue;
+    if(search&&c.player.toLowerCase().indexOf(search)===-1&&c.brand.toLowerCase().indexOf(search)===-1&&(c.set||'').toLowerCase().indexOf(search)===-1)continue;
+    filtered.push({idx:i,card:c})
+  }
+
+  // 计数
+  var cntOwned=0,cntWatching=0;
+  for(var i=0;i<data.length;i++){if(data[i].type==='owned')cntOwned++;else cntWatching++}
+  document.getElementById('cntAll').textContent=data.length;
+  document.getElementById('cntOwned').textContent=cntOwned;
+  document.getElementById('cntWatching').textContent=cntWatching;
+  document.getElementById('recordCount').textContent='共 '+filtered.length+' 条';
+
+  // 渲染
+  var h='';
+  if(filtered.length===0)h='<div class="empty">暂无数据<br><span style="font-size:11px;">录入你有的卡 + 你想追踪的卡</span></div>';
+  for(var i=0;i<filtered.length;i++){
+    var c=filtered[i].card,idx=filtered[i].idx,isOwned=c.type==='owned';
+    h+='<div class="card-item '+(isOwned?'owned':'watching')+'">';
+    h+='<div class="card-item-header"><div><span class="card-player">'+esc(c.player)+'</span><span class="card-type-tag '+(isOwned?'type-owned':'type-watching')+'">'+(isOwned?'💼 自有':'👀 追踪')+'</span></div></div>';
+    h+='<div class="card-detail">'+c.year+' '+c.brand+' '+(c.set||'')+' '+(c.number||'')+' | '+(isOwned?'成本: '+(c.cost||'--'):'市场价: '+(c.cost||'--'))+(c.note?' | '+c.note:'')+'</div>';
+
+    // 价格历史
+    var ph=c.priceHistory||[];
+    h+='<div class="price-log"><div class="price-log-header"><span>📊 价格记录 ('+ph.length+'条)</span></div>';
+    for(var p=0;p<Math.min(ph.length,5);p++)h+='<div class="price-log-item"><span class="pl-date">'+ph[p].date+'</span><span class="pl-price">'+ph[p].price+'</span></div>';
+    h+='<div class="add-price-row" id="priceRow_'+idx+'"><input type="text" placeholder="新价格(例: ¥1,200)"><button onclick="addPrice('+idx+')">+ 追加价格</button></div></div>';
+
+    h+='<div class="card-actions"><button onclick="editNote('+idx+')">✏️ 备注</button><button class="del-btn" onclick="delCard('+idx+')">🗑 删除</button></div></div>'
+  }
+  document.getElementById('cardList').innerHTML=h
+}
+
+function esc(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML}
+
+function editNote(idx){
+  var data=load(),c=data[idx],n=prompt('修改备注:',c.note||'');
+  if(n!==null){c.note=n.trim();save(data);render()}
+}
+
+function exportCSV(){
+  var data=load();if(data.length===0){alert('无数据');return}
+  var csv='类型,球员,年份,品牌,系列,编号,价格,日期,备注,价格历史\n';
+  for(var i=0;i<data.length;i++){
+    var c=data[i],ph=(c.priceHistory||[]).map(function(p){return p.date+':'+p.price}).join(';');
+    csv+=['"'+c.type+'"','"'+c.player+'"',c.year,'"'+c.brand+'"','"'+c.set+'"','"'+c.number+'"','"'+c.cost+'"','"'+c.costDate+'"','"'+c.note+'"','"'+ph+'"'].join(',')+'\n'
+  }
+  download(csv,'球星卡数据库.csv','text/csv')
+}
+
+function exportJSON(){var data=load();if(data.length===0){alert('无数据');return};download(JSON.stringify(data,null,2),'球星卡数据库.json','application/json')}
+
+function importJSON(){
+  var inp=document.createElement('input');inp.type='file';inp.accept='.json';
+  inp.onchange=function(e){
+    var f=e.target.files[0];if(!f)return;var r=new FileReader();
+    r.onload=function(ev){try{var im=JSON.parse(ev.target.result);if(!Array.isArray(im)){alert('格式错误');return};var data=load();for(var i=0;i<im.length;i++)data.unshift(im[i]);save(data);render();alert('导入 '+im.length+' 条')}catch(ex){alert('JSON格式错误')}};r.readAsText(f)
+  };inp.click()
+}
+
+function download(c,n,m){var b=new Blob([c],{type:m}),u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download=n;a.click();URL.revokeObjectURL(u)}
+
+function clearAll(){if(confirm('清空所有数据? 建议先导出备份。')){save([]);render()}}
+
+// === 首次加载自动迁移旧数据 ===
+(function(){
+  var oldData=[];try{oldData=JSON.parse(localStorage.getItem('zzCardDB')||'[]')}catch(e){}
+  if(oldData.length===0)return;
+  var newData=load();if(newData.length>0)return;
+  for(var i=0;i<oldData.length;i++){
+    var o=oldData[i];
+    newData.push({player:o.player||'',year:o.year||'',brand:o.brand||'',set:o.set||'',number:o.number||'',type:'owned',cost:o.price||'',costDate:o.date||'',note:o.note||'',priceHistory:o.price?[{date:o.date||'录入日',price:o.price}]:[],time:o.time||Date.now()})
+  }
+  save(newData)
+})();
+
+render();
+</script>
+</body>
+</html>

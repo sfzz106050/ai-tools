@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>任务清单 · ZZ</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Microsoft YaHei",sans-serif;background:#f5f5f5;color:#333;min-height:100vh}
+.header{text-align:center;padding:16px 16px 10px;background:#fff;border-bottom:1px solid #e5e5e5;position:sticky;top:0;z-index:10}
+.header h1{font-size:18px;margin-bottom:6px}
+.container{max-width:600px;margin:0 auto;padding:12px}
+
+/* 周导航 */
+.week-nav{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px}
+.week-nav button{width:32px;height:32px;border-radius:50%;border:1px solid #ddd;background:#fff;cursor:pointer;font-size:16px;color:#555;transition:all .15s;display:flex;align-items:center;justify-content:center}
+.week-nav button:hover{border-color:#333;color:#333}
+.week-nav .week-label{font-size:13px;font-weight:600;color:#333;min-width:180px;text-align:center}
+.week-nav .today-btn{font-size:11px;padding:5px 12px;border-radius:14px;border:1px solid #333;background:#fff;cursor:pointer;color:#333;font-weight:600}
+.week-nav .today-btn:hover{background:#333;color:#fff}
+
+/* 统计 */
+.stats{display:flex;gap:8px;margin-bottom:12px}
+.stat-item{flex:1;text-align:center;padding:12px 6px;background:#fff;border-radius:8px;box-shadow:0 1px 2px rgba(0,0,0,0.05)}
+.stat-num{font-size:22px;font-weight:700}
+.stat-label{font-size:10px;color:#888;margin-top:2px}
+.s-total{color:#333}.s-pending{color:#2563eb}.s-done{color:#16a34a}.s-delayed{color:#d97706}
+
+/* 添加 */
+.add-bar{display:flex;gap:6px;margin-bottom:12px;background:#fff;padding:10px;border-radius:8px;box-shadow:0 1px 2px rgba(0,0,0,0.05)}
+.add-bar input{flex:1;padding:8px 10px;border:1px solid #e5e5e5;border-radius:5px;font-size:13px;font-family:inherit;background:#fafafa}
+.add-bar input:focus{outline:none;border-color:#333;background:#fff}
+.add-bar select{padding:8px;border:1px solid #e5e5e5;border-radius:5px;font-size:12px;font-family:inherit;background:#fafafa;color:#555;cursor:pointer}
+.add-btn{padding:8px 16px;background:#333;color:#fff;border:none;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
+.add-btn:hover{background:#555}
+
+/* 每日 */
+.day-block{margin-bottom:10px;background:#fff;border-radius:8px;padding:12px 14px;box-shadow:0 1px 2px rgba(0,0,0,0.05)}
+.day-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid #f5f5f5}
+.day-name{font-size:14px;font-weight:700}
+.day-date{font-size:11px;color:#aaa}
+.day-count{font-size:10px;color:#888;background:#f5f5f5;padding:1px 8px;border-radius:8px}
+.day-today{display:inline-block;font-size:10px;background:#333;color:#fff;padding:1px 6px;border-radius:3px;margin-left:4px}
+
+.task-item{display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid #fafafa}
+.task-item:last-child{border-bottom:none}
+.task-item.done .task-text{color:#bbb;text-decoration:line-through}
+.task-item.delayed .task-text{color:#b08968}
+.task-text{font-size:12px;word-break:break-all}
+/* 便签样式 */
+.task-note{display:inline-block;background:#fffbe6;border:1px solid #fde68a;border-radius:2px 8px 8px 8px;padding:5px 8px;margin-top:4px;font-size:10px;color:#92400e;position:relative;box-shadow:1px 2px 4px rgba(0,0,0,0.06);max-width:100%;word-break:break-all}
+.task-note::before{content:'📌';position:absolute;top:-8px;left:4px;font-size:10px}
+.note-btn{background:none;border:none;cursor:pointer;font-size:13px;padding:2px 4px;opacity:0.3;transition:all .15s}
+.note-btn:hover{opacity:1}.note-btn.has-note{opacity:0.8}
+.note-edit{width:100%;margin-top:4px;padding:6px 8px;border:1px solid #fde68a;border-radius:6px;font-size:11px;font-family:inherit;background:#fffbe6;resize:none;min-height:36px}
+.note-edit:focus{outline:none;border-color:#e2b04a}
+.task-status{font-size:9px;padding:1px 6px;border-radius:6px;font-weight:600;flex-shrink:0}
+.st-pending{background:#eff6ff;color:#2563eb}
+.st-done{background:#f0fdf4;color:#16a34a}
+.st-delayed{background:#fffbeb;color:#d97706}
+.acts{display:flex;gap:3px;flex-shrink:0}
+.act{width:26px;height:26px;border-radius:4px;border:1px solid #e5e5e5;background:#fff;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:all .15s;color:#aaa}
+.act:hover{border-color:#333;color:#333}
+.act.done:hover{border-color:#16a34a;color:#16a34a;background:#f0fdf4}
+.act.delay:hover{border-color:#d97706;color:#d97706;background:#fffbeb}
+.act.undo:hover{border-color:#2563eb;color:#2563eb;background:#eff6ff}
+.act.del:hover{border-color:#dc2626;color:#dc2626;background:#fef2f2}
+
+/* 历史周列表 */
+.history-bar{margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.history-bar span{font-size:11px;color:#888;flex-shrink:0}
+.week-tags{display:flex;gap:4px;overflow-x:auto;padding-bottom:4px}
+.week-tag{padding:4px 10px;border-radius:12px;border:1px solid #e5e5e5;background:#fff;font-size:10px;cursor:pointer;white-space:nowrap;color:#888;transition:all .15s}
+.week-tag:hover{border-color:#333;color:#333}
+.week-tag.active{background:#333;color:#fff;border-color:#333}
+.week-tag.has-data{font-weight:600}
+
+.empty{text-align:center;padding:18px;color:#ddd;font-size:12px}
+footer{text-align:center;padding:16px;color:#ddd;font-size:10px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📋 任务清单</h1>
+  <div class="week-nav">
+    <button onclick="shiftWeek(-1)" title="上一周">←</button>
+    <span class="week-label" id="weekLabel"></span>
+    <button onclick="shiftWeek(1)" title="下一周">→</button>
+    <button class="today-btn" onclick="goToday()">今天</button>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- 历史周 -->
+  <div class="history-bar">
+    <span>跳转:</span>
+    <div class="week-tags" id="weekTags"></div>
+  </div>
+
+  <!-- 统计 -->
+  <div class="stats">
+    <div class="stat-item"><div class="stat-num s-total" id="nTotal">0</div><div class="stat-label">总计</div></div>
+    <div class="stat-item"><div class="stat-num s-pending" id="nPending">0</div><div class="stat-label">待办</div></div>
+    <div class="stat-item"><div class="stat-num s-done" id="nDone">0</div><div class="stat-label">已完成</div></div>
+    <div class="stat-item"><div class="stat-num s-delayed" id="nDelayed">0</div><div class="stat-label">延缓</div></div>
+  </div>
+
+  <!-- 添加 -->
+  <div class="add-bar">
+    <input type="text" id="input" placeholder="添加新任务..." onkeydown="if(event.key==='Enter')add()">
+    <select id="dayPick"></select>
+    <button class="add-btn" onclick="add()">+ 添加</button>
+  </div>
+
+  <!-- 任务 -->
+  <div id="board"></div>
+
+</div>
+<footer>任务清单 · ZZ · 数据存于浏览器</footer>
+
+<script>
+var DAYS=['周一','周二','周三','周四','周五','周六','周日'];
+var currentMonday=null;
+
+// 计算某天所在周的周一
+function getMonday(date){
+  var d=new Date(date),day=d.getDay()||7;day=day===0?7:day;
+  d.setDate(d.getDate()-day+1);d.setHours(0,0,0,0);return d
+}
+
+// 获取周一对应的日期数组
+function getWeekDates(monday){
+  var dates=[];for(var i=0;i<7;i++){var d=new Date(monday);d.setDate(monday.getDate()+i);dates.push(d)}return dates
+}
+
+// 生成周key
+function weekKeyStr(monday){return monday.toISOString().split('T')[0]}
+
+// 初始化本周
+currentMonday=getMonday(new Date());
+
+// 数据
+function load(){try{return JSON.parse(localStorage.getItem('zzTasks')||'{}')}catch(e){return{}}}
+function save(d){localStorage.setItem('zzTasks',JSON.stringify(d))}
+
+// 获取所有有数据的周keys
+function getAllWeeks(){
+  var data=load(),weeks=[];
+  for(var k in data){if(data[k]&&Object.keys(data[k]).length>0)weeks.push(k)}
+  weeks.sort();return weeks
+}
+
+function render(){
+  var dates=getWeekDates(currentMonday);
+  var wkKey=weekKeyStr(currentMonday);
+  var data=load(),wk=data[wkKey]||{};
+  var todayStr=new Date().toISOString().split('T')[0];
+  var ttl=0,pend=0,done=0,del=0,html='';
+
+  // 周标签
+  document.getElementById('weekLabel').textContent=
+    dates[0].getFullYear()+'年'+(dates[0].getMonth()+1)+'月'+dates[0].getDate()+'日 - '+
+    (dates[6].getMonth()+1)+'月'+dates[6].getDate()+'日';
+
+  // 日期选择器
+  var dp=document.getElementById('dayPick');dp.innerHTML='';
+  var tdIdx=dates.findIndex(function(d){return d.toISOString().split('T')[0]===todayStr});
+  for(var i=0;i<7;i++){
+    var o=document.createElement('option');o.value=DAYS[i];
+    o.textContent=DAYS[i]+' '+(dates[i].getMonth()+1)+'/'+dates[i].getDate();
+    if(tdIdx>=0&&i===tdIdx)o.selected=true;dp.appendChild(o)
+  }
+
+  // 历史周标签
+  var allWeeks=getAllWeeks();
+  var tagsHtml='';
+  for(var w=0;w<allWeeks.length;w++){
+    var wkMon=allWeeks[w],isActive=wkMon===wkKey;
+    tagsHtml+='<span class="week-tag'+(isActive?' active':'')+' has-data" onclick="jumpTo(\''+wkMon+'\')">'+
+      wkMon.slice(5)+'</span>'
+  }
+  document.getElementById('weekTags').innerHTML=tagsHtml||'<span class="week-tag" style="color:#ccc;">暂无历史</span>';
+
+  // 渲染每天
+  for(var d=0;d<7;d++){
+    var day=DAYS[d],tasks=wk[day]||[],dateStr=(dates[d].getMonth()+1)+'/'+dates[d].getDate();
+    var isToday=dates[d].toISOString().split('T')[0]===todayStr;
+    html+='<div class="day-block"><div class="day-header"><div><span class="day-name">'+day+'</span>&nbsp;<span class="day-date">'+dateStr+'</span>'+(isToday?'<span class="day-today">今天</span>':'')+'</div><span class="day-count">'+tasks.length+'项</span></div>';
+    if(tasks.length===0){html+='<div class="empty">暂无任务</div>'}
+    else{
+      for(var t=0;t<tasks.length;t++){
+        var task=tasks[t],cls='',stCls='',stTxt='待办';
+        if(task.status==='done'){cls='done';stCls='st-done';stTxt='已完成';done++}
+        else if(task.status==='delayed'){cls='delayed';stCls='st-delayed';stTxt='延缓';del++}
+        else{pend++}ttl++;
+        html+='<div class="task-item '+cls+'"><div style="flex:1;min-width:0"><span class="task-text">'+esc(task.text)+'</span>'+(task.note?'<div class="task-note" id="nd_'+day+'_'+t+'">'+esc(task.note)+'</div>':'')+'<div id="ne_'+day+'_'+t+'"></div></div><span class="task-status '+(stCls||'st-pending')+'">'+stTxt+'</span><div class="acts">';
+        // 备注按钮
+        html+='<button class="note-btn'+(task.note?' has-note':'')+'" title="备注" onclick="toggleNote(\''+day+'\','+t+')">📝</button>';
+        if(task.status==='pending'){html+='<button class="act done" title="完成" onclick="setStatus(\''+day+'\','+t+',\'done\')">✔</button><button class="act delay" title="延缓" onclick="setStatus(\''+day+'\','+t+',\'delayed\')">⏸</button>'}
+        else if(task.status==='delayed'){html+='<button class="act done" title="完成" onclick="setStatus(\''+day+'\','+t+',\'done\')">✔</button><button class="act undo" title="恢复" onclick="setStatus(\''+day+'\','+t+',\'pending\')">↩</button>'}
+        else{html+='<button class="act undo" title="恢复" onclick="setStatus(\''+day+'\','+t+',\'pending\')">↩</button>'}
+        html+='<button class="act del" title="删除" onclick="del(\''+day+'\','+t+')">✕</button></div></div>'
+      }
+    }
+    html+='</div>'
+  }
+
+  document.getElementById('board').innerHTML=html;
+  document.getElementById('nTotal').textContent=ttl;
+  document.getElementById('nPending').textContent=pend;
+  document.getElementById('nDone').textContent=done;
+  document.getElementById('nDelayed').textContent=del
+}
+
+function shiftWeek(dir){
+  currentMonday.setDate(currentMonday.getDate()+dir*7);render()
+}
+function goToday(){currentMonday=getMonday(new Date());render()}
+function jumpTo(key){currentMonday=new Date(key+'T00:00:00');render()}
+
+function add(){
+  var text=document.getElementById('input').value.trim();if(!text)return;
+  var day=document.getElementById('dayPick').value;
+  var wkKey=weekKeyStr(currentMonday),data=load();
+  if(!data[wkKey])data[wkKey]={};
+  if(!data[wkKey][day])data[wkKey][day]=[];
+  data[wkKey][day].push({text:text,note:'',status:'pending',time:Date.now()});
+  save(data);document.getElementById('input').value='';render()
+}
+
+function setStatus(day,idx,status){
+  var wkKey=weekKeyStr(currentMonday),data=load();
+  if(!data[wkKey]||!data[wkKey][day])return;
+  data[wkKey][day][idx].status=status;save(data);render()
+}
+
+function del(day,idx){
+  var wkKey=weekKeyStr(currentMonday),data=load();
+  if(!data[wkKey]||!data[wkKey][day])return;
+  data[wkKey][day].splice(idx,1);save(data);render()
+}
+
+// 备注: 点击📝按钮弹出便签编辑
+function toggleNote(day,idx){
+  var editArea=document.getElementById('ne_'+day+'_'+idx);
+  if(editArea.innerHTML!==''){
+    var ta=editArea.querySelector('textarea');
+    if(ta)saveNote(day,idx,ta.value);
+    return
+  }
+  var wkKey=weekKeyStr(currentMonday),data=load();
+  var note=data[wkKey]&&data[wkKey][day]?data[wkKey][day][idx].note||'':'';
+  editArea.innerHTML='<textarea class="note-edit" placeholder="写备注..."></textarea>';
+  var ta=editArea.querySelector('textarea');
+  ta.value=note;
+  ta.focus();
+  ta.addEventListener('blur',function(){saveNote(day,idx,ta.value)});
+  ta.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();saveNote(day,idx,ta.value)}})
+}
+
+function saveNote(day,idx,val){
+  var wkKey=weekKeyStr(currentMonday),data=load();
+  if(!data[wkKey]||!data[wkKey][day])return;
+  data[wkKey][day][idx].note=val.trim();save(data);render()
+}
+
+function esc(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML}
+render();
+</script>
+</body>
+</html>

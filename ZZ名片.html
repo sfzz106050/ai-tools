@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZZ · 个人名片</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:"Microsoft YaHei",sans-serif;
+  background:linear-gradient(135deg,#e8ecf1 0%,#d5dbe3 50%,#c8d4df 100%);
+  display:flex;justify-content:center;align-items:center;
+  min-height:100vh;padding:20px;
+}
+/* 卡片 - 玻璃质感 */
+.card{
+  background:linear-gradient(145deg,rgba(255,255,255,0.95),rgba(248,250,252,0.9));
+  backdrop-filter:blur(20px);
+  border-radius:24px;
+  padding:36px 28px 28px;
+  max-width:400px;width:100%;
+  box-shadow:
+    0 2px 4px rgba(0,0,0,0.04),
+    0 8px 24px rgba(0,0,0,0.08),
+    0 20px 48px rgba(0,0,0,0.06);
+  text-align:center;
+  border:1px solid rgba(255,255,255,0.8);
+  position:relative;
+  overflow:hidden;
+}
+/* 顶部装饰线 */
+.card::before{
+  content:'';position:absolute;top:0;left:0;right:0;
+  height:4px;
+  background:linear-gradient(90deg,#e2b04a,#f59e0b,#e2b04a,#fbbf24,#e2b04a);
+}
+
+/* 头像 */
+.avatar-wrap{
+  width:90px;height:90px;
+  border-radius:50%;
+  background:linear-gradient(135deg,#fff7ed,#fed7aa,#fff7ed);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 14px;
+  font-size:48px;
+  position:relative;
+  box-shadow:
+    0 0 0 3px #fff,
+    0 0 0 6px rgba(226,176,74,0.3),
+    0 4px 12px rgba(0,0,0,0.1);
+  animation: bounce 2s ease-in-out infinite;
+}
+@keyframes bounce{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-6px)}
+}
+/* 梅西小胡子装饰 */
+.avatar-wrap::after{
+  content:'☆';position:absolute;top:-2px;right:-2px;
+  font-size:16px;color:#e2b04a;
+}
+
+/* 名字 */
+.name{font-size:24px;font-weight:800;color:#1a1a2e;margin-bottom:2px;letter-spacing:2px}
+
+/* 头衔行 */
+.title-row{display:flex;justify-content:center;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.title-item{
+  font-size:11px;padding:3px 10px;border-radius:10px;font-weight:600;
+  background:#f0f4f8;color:#64748b;
+}
+.title-item.highlight{background:#1a1a2e;color:#e2b04a}
+
+/* 一句话介绍 */
+.bio{font-size:12px;color:#94a3b8;margin-bottom:20px;line-height:1.6}
+
+/* 技能网格 - 2x3 */
+.skills-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-bottom:20px;
+}
+.skill-card{
+  background:linear-gradient(135deg,#fafbfc,#f0f4f8);
+  border:1px solid rgba(0,0,0,0.04);
+  border-radius:12px;
+  padding:12px 10px;
+  text-align:center;
+  transition:all .2s;
+}
+.skill-card:hover{
+  transform:translateY(-2px);
+  box-shadow:0 4px 12px rgba(0,0,0,0.08);
+  border-color:rgba(226,176,74,0.3);
+}
+.skill-icon{font-size:22px;margin-bottom:4px}
+.skill-name{font-size:12px;font-weight:700;color:#1a1a2e}
+.skill-desc{font-size:10px;color:#94a3b8;margin-top:2px}
+
+/* 联系方式 */
+.contact-row{
+  display:flex;gap:8px;margin-bottom:12px;
+}
+.contact-item{
+  flex:1;
+  background:#fafbfc;
+  border:1px solid rgba(0,0,0,0.04);
+  border-radius:10px;
+  padding:10px 8px;
+  font-size:11px;color:#888;
+  transition:all .2s;
+}
+.contact-item:hover{background:#f0f4f8}
+.contact-item .ci-icon{font-size:16px;display:block;margin-bottom:3px}
+.contact-item .ci-val{font-weight:700;color:#555;font-size:11px}
+
+/* 页脚小字 */
+.footnote{font-size:10px;color:#ccc;margin-top:8px}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <!-- Q版梅西头像 -->
+  <div class="avatar-wrap">⚽</div>
+
+  <!-- 名字 -->
+  <div class="name">ZZ</div>
+
+  <!-- 头衔标签 -->
+  <div class="title-row">
+    <span class="title-item highlight">AI 初学者</span>
+    <span class="title-item">硕士</span>
+    <span class="title-item">足球球探</span>
+    <span class="title-item">球星卡投资者</span>
+  </div>
+
+  <!-- 一句话介绍 -->
+  <div class="bio">学习 AI 第 4 天 · 零基础在做球星卡预测 App</div>
+
+  <!-- 2x3 技能网格 -->
+  <div class="skills-grid">
+    <div class="skill-card">
+      <div class="skill-icon">🤖</div>
+      <div class="skill-name">Claude Code</div>
+      <div class="skill-desc">AI 协作开发</div>
+    </div>
+    <div class="skill-card">
+      <div class="skill-icon">🃏</div>
+      <div class="skill-name">球星卡预测</div>
+      <div class="skill-desc">数据驱动投资</div>
+    </div>
+    <div class="skill-card">
+      <div class="skill-icon">⚽</div>
+      <div class="skill-name">足球球探</div>
+      <div class="skill-desc">U11-U15 评估</div>
+    </div>
+    <div class="skill-card">
+      <div class="skill-icon">📊</div>
+      <div class="skill-name">数据处理</div>
+      <div class="skill-desc">Excel / 可视化</div>
+    </div>
+    <div class="skill-card">
+      <div class="skill-icon">🎨</div>
+      <div class="skill-name">HTML/CSS</div>
+      <div class="skill-desc">网页制作</div>
+    </div>
+    <div class="skill-card">
+      <div class="skill-icon">📝</div>
+      <div class="skill-name">AI 应用</div>
+      <div class="skill-desc">工具产品化</div>
+    </div>
+  </div>
+
+  <!-- 联系方式 -->
+  <div class="contact-row">
+    <div class="contact-item">
+      <span class="ci-icon">📞</span>
+      <span class="ci-val">13282188948</span>
+    </div>
+    <div class="contact-item">
+      <span class="ci-icon">📧</span>
+      <span class="ci-val">446672114@qq.com</span>
+    </div>
+    <div class="contact-item">
+      <span class="ci-icon">📍</span>
+      <span class="ci-val">中国</span>
+    </div>
+  </div>
+
+  <div class="footnote">ZZ · 2026 · 学习 AI 第 4 天</div>
+</div>
+
+</body>
+</html>

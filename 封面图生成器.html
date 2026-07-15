@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>封面图生成器 · ZZ</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Microsoft YaHei",sans-serif;background:#1a1a2e;color:#fff;padding:20px;text-align:center}
+h1{font-size:20px;margin-bottom:8px;color:#e2b04a}
+.sub{font-size:12px;color:#888;margin-bottom:20px}
+
+.preview-grid{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:24px}
+
+/* 封面卡片 - 1:1 方形 */
+.cover{
+  width:300px;height:300px;border-radius:16px;padding:28px 24px;
+  display:flex;flex-direction:column;justify-content:center;align-items:center;
+  text-align:center;position:relative;overflow:hidden;
+  box-shadow:0 4px 20px rgba(0,0,0,0.3);
+}
+.cover::before{content:'';position:absolute;top:-60px;right:-60px;width:160px;height:160px;border-radius:50%;opacity:.06}
+.cover-icon{font-size:52px;margin-bottom:14px;position:relative;z-index:1}
+.cover-title{font-size:22px;font-weight:800;letter-spacing:1px;position:relative;z-index:1;margin-bottom:6px}
+.cover-sub{font-size:12px;opacity:.8;position:relative;z-index:1;line-height:1.6}
+.cover-tag{display:inline-block;padding:4px 14px;border-radius:12px;font-size:11px;font-weight:700;margin-top:14px;position:relative;z-index:1}
+
+/* 三款配色 */
+.cover-1{background:linear-gradient(135deg,#1a1a2e,#2d2d44)}.cover-1::before{background:#e2b04a;top:-40px;right:-40px;width:140px;height:140px}
+.cover-1 .cover-title{color:#e2b04a}.cover-1 .cover-tag{background:rgba(226,176,74,.15);color:#e2b04a}
+
+.cover-2{background:linear-gradient(135deg,#0d1b2a,#1b3a50)}.cover-2::before{background:#4ade80;top:-40px;right:-40px;width:140px;height:140px}
+.cover-2 .cover-title{color:#4ade80}.cover-2 .cover-tag{background:rgba(74,222,128,.15);color:#4ade80}
+
+.cover-3{background:linear-gradient(135deg,#1a1a2e,#2a1a3e)}.cover-3::before{background:#a78bfa;top:-40px;right:-40px;width:140px;height:140px}
+.cover-3 .cover-title{color:#a78bfa}.cover-3 .cover-tag{background:rgba(167,139,250,.15);color:#a78bfa}
+
+.tip{font-size:11px;color:#aaa;margin-top:16px}
+.tip span{color:#e2b04a}
+</style>
+</head>
+<body>
+
+<h1>🎨 闲鱼封面图</h1>
+<p class="sub">截图使用 · 1:1 正方形 · 已适配闲鱼缩略图</p>
+
+<div class="preview-grid">
+  <!-- 封面1: 球星卡 -->
+  <div class="cover cover-1">
+    <div class="cover-icon">⚽</div>
+    <div class="cover-title">球星卡AI分析</div>
+    <div class="cover-sub">球探视角评估<br>三维价格预测</div>
+    <div class="cover-tag">单卡19.9元</div>
+  </div>
+
+  <!-- 封面2: 数据整理 -->
+  <div class="cover cover-2">
+    <div class="cover-icon">📊</div>
+    <div class="cover-title">AI数据整理</div>
+    <div class="cover-sub">Excel混乱变整洁<br>自动生成报表</div>
+    <div class="cover-tag">30-150元</div>
+  </div>
+
+  <!-- 封面3: 网页定制 -->
+  <div class="cover cover-3">
+    <div class="cover-icon">🌐</div>
+    <div class="cover-title">AI网页定制</div>
+    <div class="cover-sub">你要什么功能<br>我帮你做出来</div>
+    <div class="cover-tag">200元起</div>
+  </div>
+</div>
+
+<p class="tip">截图方法: <span>Win+Shift+S</span> 框选封面 → 保存 → 上传闲鱼</p>
+
+</body>
+</html>

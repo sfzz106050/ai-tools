@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>球星卡收藏偏好调查</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Microsoft YaHei",sans-serif;background:#f5f5f5;color:#333;min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px}
+.card{background:#fff;border-radius:16px;padding:28px 24px;max-width:520px;width:100%;box-shadow:0 2px 12px rgba(0,0,0,0.06)}
+.card h1{font-size:20px;margin-bottom:6px}
+.card .sub{font-size:12px;color:#999;margin-bottom:20px}
+
+/* 进度条 */
+.progress-wrap{background:#eee;border-radius:4px;height:4px;margin-bottom:24px}
+.progress-fill{height:100%;border-radius:4px;background:#1a1a2e;transition:width .3s;width:0%}
+
+/* 问题卡片 */
+.q-block{margin-bottom:20px;padding:14px 16px;background:#fafafa;border-radius:10px;border:1px solid #f0f0f0}
+.q-label{font-size:14px;font-weight:700;margin-bottom:10px;color:#1a1a2e}
+.q-label .num{display:inline-block;width:20px;height:20px;line-height:20px;text-align:center;background:#1a1a2e;color:#fff;border-radius:50%;font-size:11px;margin-right:6px}
+
+/* 选项 */
+.options{display:flex;flex-direction:column;gap:6px}
+.opt{display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid #e5e5e5;border-radius:8px;cursor:pointer;transition:all .15s;font-size:13px}
+.opt:hover{border-color:#aaa;background:#fff}
+.opt.selected{border-color:#1a1a2e;background:#f8f8fb;font-weight:600}
+.opt-dot{width:16px;height:16px;border-radius:50%;border:2px solid #ccc;flex-shrink:0;transition:all .15s}
+.opt.selected .opt-dot{border-color:#1a1a2e;background:#1a1a2e;box-shadow:inset 0 0 0 3px #fff}
+
+/* 滑条 */
+.range-row{display:flex;align-items:center;gap:10px}
+.range-row input{flex:1}
+.range-val{font-weight:700;font-size:14px;min-width:80px;text-align:right}
+
+/* 按钮 */
+.submit-btn{width:100%;padding:14px;background:#1a1a2e;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;margin-top:4px;transition:all .15s}
+.submit-btn:hover{background:#333;transform:translateY(-1px)}
+
+/* 结果区 */
+.result-area{display:none;margin-top:20px;padding:20px;background:linear-gradient(135deg,#fafbfc,#f0f4f8);border-radius:12px;border:1px solid #e5e5e5}
+.result-area.show{display:block}
+.result-area h2{font-size:16px;margin-bottom:12px}
+.result-text{font-size:13px;line-height:1.8;color:#555}
+.tag{display:inline-block;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;margin:2px 4px}
+.tag-bull{background:#fef2f2;color:#dc2626}
+.tag-bear{background:#f0fdf4;color:#16a34a}
+.tag-neutral{background:#f0f4f8;color:#64748b}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h1>🃏 球星卡收藏偏好调查</h1>
+  <p class="sub">根据你的选择，AI 为你生成投资画像</p>
+
+  <div class="progress-wrap"><div class="progress-fill" id="progress"></div></div>
+
+  <!-- Q1 -->
+  <div class="q-block">
+    <div class="q-label"><span class="num">1</span> 你主要收藏哪个类型的卡？</div>
+    <div class="options" id="q1">
+      <div class="opt" data-v="新秀RC"><span class="opt-dot"></span>新秀 RC（看重未来潜力）</div>
+      <div class="opt" data-v="传奇球星"><span class="opt-dot"></span>传奇球星（梅西/C罗/齐达内等）</div>
+      <div class="opt" data-v="当打之年"><span class="opt-dot"></span>当打之年（现役巅峰期球员）</div>
+      <div class="opt" data-v="什么都收"><span class="opt-dot"></span>什么都收一点，没有特定方向</div>
+    </div>
+  </div>
+
+  <!-- Q2 -->
+  <div class="q-block">
+    <div class="q-label"><span class="num">2</span> 你的持有策略偏向？</div>
+    <div class="options" id="q2">
+      <div class="opt" data-v="短线"><span class="opt-dot"></span>短线 Flip（几周内买卖，赚差价）</div>
+      <div class="opt" data-v="中线"><span class="opt-dot"></span>中线持有（几个月到 1-2 年）</div>
+      <div class="opt" data-v="长线"><span class="opt-dot"></span>长线收藏（3 年以上，等成才或退役）</div>
+      <div class="opt" data-v="混合"><span class="opt-dot"></span>混合策略，看情况</div>
+    </div>
+  </div>
+
+  <!-- Q3 -->
+  <div class="q-block">
+    <div class="q-label"><span class="num">3</span> 你单张卡的预算范围？</div>
+    <div class="options" id="q3">
+      <div class="opt" data-v="低"><span class="opt-dot"></span>入门级（500 元以内）</div>
+      <div class="opt" data-v="中"><span class="opt-dot"></span>中端（500-3000 元）</div>
+      <div class="opt" data-v="高"><span class="opt-dot"></span>高端（3000 元以上）</div>
+      <div class="opt" data-v="灵活"><span class="opt-dot"></span>不设上限，卡好就买</div>
+    </div>
+  </div>
+
+  <!-- Q4 -->
+  <div class="q-block">
+    <div class="q-label"><span class="num">4</span> 你最看重什么因素？（多选）</div>
+    <div class="options" id="q4">
+      <div class="opt" data-v="球员潜力"><span class="opt-dot"></span>球员潜力（年轻、上升空间大）</div>
+      <div class="opt" data-v="卡片稀缺"><span class="opt-dot"></span>卡片稀缺性（编号低、POP少）</div>
+      <div class="opt" data-v="市场热度"><span class="opt-dot"></span>市场热度（大家都在追）</div>
+      <div class="opt" data-v="个人喜好"><span class="opt-dot"></span>个人喜好（单纯喜欢这个球员）</div>
+    </div>
+  </div>
+
+  <!-- Q5 -->
+  <div class="q-block">
+    <div class="q-label"><span class="num">5</span> 你的风险承受力（1-10）</div>
+    <div class="range-row">
+      <span style="font-size:12px;color:#999;">保守</span>
+      <input type="range" min="1" max="10" value="5" id="riskSlider" oninput="this.nextElementSibling.textContent=this.value">
+      <span class="range-val">5</span>
+      <span style="font-size:12px;color:#999;">激进</span>
+    </div>
+  </div>
+
+  <button class="submit-btn" id="submitBtn" onclick="analyze()">📊 生成我的投资画像</button>
+
+  <!-- 结果 -->
+  <div class="result-area" id="result"></div>
+</div>
+
+<script>
+// === 事件：点击选项 ===
+document.querySelectorAll('.options').forEach(function(group){
+  group.addEventListener('click', function(e){
+    var opt=e.target.closest('.opt');if(!opt)return;
+    // Q4 多选题
+    if(group.id==='q4'){opt.classList.toggle('selected')}
+    // 其他单选题
+    else{
+      group.querySelectorAll('.opt').forEach(function(o){o.classList.remove('selected')});
+      opt.classList.add('selected')
+    }
+    updateProgress()
+  })
+});
+
+// === 事件：滑条变化 ===
+document.getElementById('riskSlider').addEventListener('input',function(){
+  this.nextElementSibling.textContent=this.value;
+  updateProgress()
+});
+
+// === DOM操作：更新进度条 ===
+function updateProgress(){
+  var answered=0,total=5;
+  for(var i=1;i<=4;i++){
+    var sel=document.querySelector('#q'+i+' .opt.selected');
+    if(sel)answered++
+  }
+  answered++; // 滑条默认有值
+  document.getElementById('progress').style.width=(answered/total*100)+'%'
+}
+
+// === DOM操作：从选项提取值 ===
+function getAnswers(){
+  var r={};
+  for(var i=1;i<=3;i++){
+    var sel=document.querySelector('#q'+i+' .opt.selected');
+    r['q'+i]=sel?sel.dataset.v:'未选'
+  }
+  var q4s=document.querySelectorAll('#q4 .opt.selected'),q4v=[];
+  q4s.forEach(function(o){q4v.push(o.dataset.v)});
+  r.q4=q4v.length>0?q4v.join('、'):'未选';
+  r.risk=parseInt(document.getElementById('riskSlider').value);
+  return r
+}
+
+// === 分析逻辑 ===
+function analyze(){
+  var a=getAnswers();
+
+  // 检查是否都填了
+  if(a.q1==='未选'||a.q2==='未选'||a.q3==='未选'){
+    alert('请完成所有单选题（Q1-Q3）');
+    return
+  }
+
+  // 画像生成
+  var profile='',advice='',tags='';
+
+  // Q1 类型分析
+  if(a.q1==='新秀RC'){
+    profile+='你是一个**潜力型投资者**。你相信在球员还没成名时入场，等他们成长为巨星时收获回报。';
+    advice+='建议重点关注 16-20 岁、已在五大联赛或顶级青训体系中的新秀。你已经在盯的通卡拉和 Ngumoha 就是这个方向。';
+    tags+='<span class="tag tag-bull">潜力派</span>'
+  }else if(a.q1==='传奇球星'){
+    profile+='你是一个**价值型收藏家**。你喜欢确定性，倾向于买入已经被历史证明的球员。';
+    advice+='传奇卡的逻辑是"退役效应"——在退役前后通常有一波情绪拉升。你手里的梅西 /299 和 C 罗 /799 就是这个逻辑。';
+    tags+='<span class="tag tag-neutral">价值派</span>'
+  }else if(a.q1==='当打之年'){
+    profile+='你是一个**趋势型投资者**。你追的是球员当前的表现和热度，跟着市场走。';
+    advice+='注意区分"真的在涨"和"炒作到顶"。当打之年球员的卡价波动最大，设定止盈线很重要。';
+    tags+='<span class="tag tag-bull">趋势派</span>'
+  }else{
+    profile+='你的收藏风格比较**多元化**，还在探索阶段。这不一定是坏事——看得多了才知道自己适合什么。';
+    advice+='建议逐渐收敛到 1-2 个方向深耕，分散太多不利于形成判断力。';
+    tags+='<span class="tag tag-neutral">探索期</span>'
+  }
+
+  // Q2 持有策略
+  if(a.q2==='短线'){tags+='<span class="tag tag-bull">短线Flip</span>'}
+  else if(a.q2==='中线'){tags+='<span class="tag tag-neutral">中线持有</span>'}
+  else if(a.q2==='长线'){tags+='<span class="tag tag-bear">长线收藏</span>'}
+  else{tags+='<span class="tag tag-neutral">灵活策略</span>'}
+
+  // Q4 关注点
+  if(a.q4.indexOf('卡片稀缺')!==-1)tags+='<span class="tag tag-bull">稀缺优先</span>';
+  if(a.q4.indexOf('球员潜力')!==-1)tags+='<span class="tag tag-bull">潜力优先</span>';
+  if(a.q4.indexOf('市场热度')!==-1)tags+='<span class="tag tag-neutral">热度敏感</span>';
+
+  // 风险
+  var riskTxt='';
+  if(a.risk>=8){riskTxt='高风险偏好——敢追敢买，但要注意止损。你的球星卡预测工具正好帮你做理性判断。'}
+  else if(a.risk>=5){riskTxt='中等风险偏好——在稳健和进取之间取得平衡。这是最适合长期做卡市的位置。'}
+  else{riskTxt='低风险偏好——追求确定性。建议多关注传奇卡和已兑现潜力的球员，少碰纯新秀彩票。'}
+
+  // 渲染
+  var html='<h2>📊 你的投资画像</h2>';
+  html+='<div style="margin-bottom:12px;">'+tags+'</div>';
+  html+='<div class="result-text"><p>'+profile+'</p><br><p>'+advice+'</p><br><p>💡 '+riskTxt+'</p></div>';
+
+  var resultArea=document.getElementById('result');
+  resultArea.innerHTML=html;    // ← 这就是 DOM 操作：动态修改页面内容
+  resultArea.classList.add('show');
+  resultArea.scrollIntoView({behavior:'smooth'})
+}
+
+// 初始进度
+updateProgress();
+</script>
+</body>
+</html>

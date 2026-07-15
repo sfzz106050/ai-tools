@@ -1,0 +1,40 @@
+<!-- 球星卡预测小程序 · 首页 -->
+<view class="container">
+  <view class="header">
+    <text class="title">Card Price Predictor</text>
+    <text class="sub">球星卡价格预测</text>
+  </view>
+
+  <view class="section">
+    <text class="section-title">球员信息</text>
+    <input class="input" placeholder="球员姓名" value="{{name}}" bindinput="onNameInput"/>
+    <input class="input" placeholder="年龄" value="{{age}}" bindinput="onAgeInput"/>
+    <picker range="{{positions}}" value="{{posIndex}}" bindchange="onPosChange">
+      <view class="picker">{{positions[posIndex] || '选择位置'}}</view>
+    </picker>
+  </view>
+
+  <view class="section">
+    <text class="section-title">卡片信息</text>
+    <input class="input" placeholder="品牌" value="{{brand}}" bindinput="onBrandInput"/>
+    <input class="input" placeholder="系列" value="{{setName}}" bindinput="onSetInput"/>
+    <input class="input" placeholder="年份" value="{{year}}" bindinput="onYearInput"/>
+    <input class="input" placeholder="编号 (例: /150)" value="{{number}}" bindinput="onNumberInput"/>
+    <input class="input" placeholder="当前市场价" value="{{price}}" bindinput="onPriceInput"/>
+  </view>
+
+  <button class="btn" bindtap="onPredict">生成预测报告</button>
+
+  <view class="result" wx:if="{{showResult}}">
+    <text class="result-title">预测结果</text>
+    <view class="result-row">
+      <text>短期(6月): {{shortDir}} · {{shortPrice}}元</text>
+    </view>
+    <view class="result-row">
+      <text>中期(1-2年): {{midDir}} · {{midPrice}}元</text>
+    </view>
+    <view class="result-row">
+      <text>操作建议: {{advice}}</text>
+    </view>
+  </view>
+</view>
