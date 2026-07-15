@@ -480,17 +480,25 @@ function generatePrediction(){
   var phaseScore=phaseMap[gs('p3_age_phase')]||0;
   var statusMap={'绝对核心':2,'主力':1,'轮换':0,'替补':-1,'边缘':-2,'青年队/未出道':0};
   var statusScore=statusMap[gs('p2a_status')]||0;
-  var gutMap={'非常看好':2,'比较看好':1,'不确定':0,'不太看好':-1.5};
-  var gutScore=gutMap[gs('p9_gut')]||0;
+  // === 球探判断: 从"加分项"升级为"主导项"(公式40% + 直觉60%) ===
+  var gutMap={'非常看好':1.30,'比较看好':1.10,'不确定':1.00,'不太看好':0.80};
+  var gutMultiplier=gutMap[gs('p9_gut')]||1.00;
+  var gutBase={'非常看好':8.5,'比较看好':7.0,'不确定':5.0,'不太看好':3.0};
+  var gutScore=gutBase[gs('p9_gut')]||5.0;
 
   var holdMap={'6个月内':-0.5,'6-18个月':0,'1-3年':0.5,'3-5年':1,'5年以上':1.5};
   var holdBonus=holdMap[gs('p9_hold_period')]||0;
-  var confMap={'极高':1,'较高':0.5,'一般':0,'较低':-0.5};
-  var confBonus=confMap[gs('p9_confidence')]||0;
+  var confMap={'极高':1.0,'较高':0.7,'一般':0.4,'较低':0.1};
+  var confWeight=confMap[gs('p9_confidence')]||0.4;
 
-  var scoreLT=5+phaseScore+statusScore+rcBonus+gutScore+holdBonus+posBonus;
+  // 公式基准 → 球探判断修正(6:4权重)
+  var scoreLT=5+phaseScore+statusScore+rcBonus+holdBonus+posBonus;
   scoreLT=Math.max(1,Math.min(10,scoreLT));
-  scoreST=scoreST+confBonus;scoreMT=scoreMT+confBonus;
+  scoreLT=Math.round((scoreLT*0.4+gutScore*0.6)*10)/10;
+  scoreLT=Math.max(1,Math.min(10,scoreLT));
+  // 短期/中期也融合球探判断
+  scoreST=Math.round((scoreST*(1-confWeight)+gutScore*confWeight)*10)/10;
+  scoreMT=Math.round((scoreMT*(1-confWeight)+gutScore*confWeight)*10)/10;
   scoreST=Math.max(1,Math.min(10,scoreST));scoreMT=Math.max(1,Math.min(10,scoreMT));
 
   var riskSum=gi('r8_injury')+gi('r8_competition')+gi('r8_club_risk')+gi('r8_bubble')+gi('r8_liquidity');
@@ -528,7 +536,9 @@ function generatePrediction(){
 
   var r='========================================\n  '+name+' 球星卡价格预测报告\n  '+ (g('p5_year')||'?')+' '+ (g('p5_brand')||'')+' '+ (g('p5_set')||'');
   if(g('p5_type'))r+=' '+g('p5_type');if(g('p5_numbered'))r+=' '+g('p5_numbered');if(g('p5_grade'))r+=' PSA/BGS '+g('p5_grade');
-  r+='\n  预测日期: '+new Date().toISOString().split('T')[0]+'\n========================================\n\n';
+  r+='\n  分析日期: '+new Date().toISOString().split('T')[0];
+  r+='\n  评分模式: 球探判断主导(60%) + 数据公式(40%)';
+  r+='\n========================================\n\n';
   r+='--- 预测总览\n\n  当前市场价: '+currentPrice+'\n';if(costNote)r+='  '+costNote+'\n';
   r+='\n  [短期 6月] 评分 '+adjST.toFixed(1)+'/10  方向: '+(adjST>=7?'看涨':adjST>=5.5?'稳中偏强':adjST>=4.5?'震荡偏弱':'看跌')+'\n    目标区间: '+predST.low+' - '+predST.high+' 元 (中位'+predST.mid+'元, 变化 '+predST.mult+'%)\n\n';
   r+='  [中期 1-2年] 评分 '+adjMT.toFixed(1)+'/10  方向: '+(adjMT>=7?'看涨':adjMT>=5.5?'稳中偏强':adjMT>=4.5?'震荡偏弱':'看跌')+'\n    目标区间: '+predMT.low+' - '+predMT.high+' 元 (中位'+predMT.mid+'元, 变化 '+predMT.mult+'%)\n\n';
